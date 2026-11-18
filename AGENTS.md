@@ -17,7 +17,8 @@ None yet. The owner sets one; agents do not invent it.
 - Taste, naming and direction are Chris's to rule. Agents propose; Chris ratifies.
 - Decisions: never edit a ruled decision's text. Add a dated amendment, or supersede it with a new one. Follow the
   active decision; superseded ones are history only.
-- Work on a branch. Never push straight to the main branch without Chris's approval.
+- Work on the main branch: commit there directly, with no feature branches. Chris ruled on 2026-11-18: "I would
+  like all work to be done on the main branch". Push only with Chris's approval.
 - Keep `docs/` tidy: no loose dated files at its top level.
 
 <!-- pitmaster rules: plan, check, plain · catalogue 2026-10-23 · project-prep rewrites everything down to the end line -->
