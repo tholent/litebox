@@ -16,6 +16,9 @@
 
 Usage: python3 tests/run.py [--screenshots] [--keep]
 
+Each test page runs in headless Chrome on a real clock: run.py asks the page over Chrome's debugging pipe whether
+its harness has finished, so a slow machine only takes longer.
+
 1. Builds a test drive in tests/out/drive: a copy of litebox.html, a photos/ folder of made-up photos
    (EXIF dates and descriptions, a rotated photo, PNG, WebP, a broken file, formats browsers can't show,
    hidden system files) and files outside photos/ that must be ignored.
@@ -32,11 +35,14 @@ Needs: python3 with Pillow, and chromium (firefox only for --screenshots).
 from __future__ import annotations
 
 import base64
+import contextlib
+import fcntl
 import hashlib
 import html
 import json
 import os
 import re
+import select
 import shutil
 import subprocess
 import sys
@@ -158,17 +164,100 @@ def chromium(args):
     return subprocess.run(cmd, capture_output=True, text=True, timeout=180, check=False)
 
 
-def run_page(page: Path):
-    # The budget is simulated time, which runs ahead whenever the page is idle; a slow machine can spend a lot of
-    # it while photos decode, so it is generous. Finishing early costs nothing.
+class DevTools:
+    """Talks to headless Chrome over --remote-debugging-pipe (JSON messages ending in NUL, on fds 3 and 4)."""
+
+    def __init__(self, url):
+        to_chrome_r, self.to_chrome = os.pipe()
+        self.from_chrome, from_chrome_w = os.pipe()
+        # Move Chrome's ends up and out of the way, so placing them on fds 3 and 4 cannot clobber each other.
+        hi_r, hi_w = fcntl.fcntl(to_chrome_r, fcntl.F_DUPFD, 20), fcntl.fcntl(from_chrome_w, fcntl.F_DUPFD, 20)
+        os.close(to_chrome_r)
+        os.close(from_chrome_w)
+
+        def place():
+            os.dup2(hi_r, 3)
+            os.dup2(hi_w, 4)
+
+        cmd = [CHROMIUM, "--headless", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
+               "--allow-file-access-from-files", "--hide-scrollbars", "--window-size=1280,800",
+               "--remote-debugging-pipe"] + CHROME_EXTRA + [url]
+        # preexec_fn is the only way to put the pipe on the fixed fds 3 and 4 Chrome reads; no threads run here.
+        self.proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,  # noqa: PLW1509
+                                     stderr=subprocess.PIPE, preexec_fn=place, pass_fds=(3, 4, hi_r, hi_w))
+        os.close(hi_r)
+        os.close(hi_w)
+        self.buf, self.next_id, self.session = b"", 0, None
+
+    def call(self, method, params=None, timeout=30):
+        self.next_id += 1
+        msg = {"id": self.next_id, "method": method, "params": params or {}}
+        if self.session:
+            msg["sessionId"] = self.session
+        os.write(self.to_chrome, json.dumps(msg).encode() + b"\0")
+        end = time.monotonic() + timeout
+        while True:
+            while b"\0" in self.buf:
+                raw, self.buf = self.buf.split(b"\0", 1)
+                reply = json.loads(raw)
+                if reply.get("id") == self.next_id:
+                    if "error" in reply:
+                        raise RuntimeError(f"{method}: {reply['error']}")
+                    return reply.get("result", {})
+            left = end - time.monotonic()
+            if left <= 0 or not select.select([self.from_chrome], [], [], left)[0]:
+                raise TimeoutError(method)
+            chunk = os.read(self.from_chrome, 1 << 16)
+            if not chunk:
+                raise RuntimeError("chrome closed the connection")
+            self.buf += chunk
+
+    def evaluate(self, expression):
+        r = self.call("Runtime.evaluate", {"expression": expression, "returnByValue": True})
+        return r.get("result", {}).get("value")
+
+    def close(self):
+        self.session = None
+        with contextlib.suppress(OSError, RuntimeError, TimeoutError):
+            self.call("Browser.close", timeout=5)
+        try:
+            self.proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            self.proc.kill()
+        for fd in (self.to_chrome, self.from_chrome):
+            os.close(fd)
+        return self.proc.stderr.read().decode(errors="replace") if self.proc.stderr else ""
+
+
+def run_page(page: Path, timeout=180):
+    """Opens a test page in headless Chrome on a real clock and waits until its harness has written its results.
+
+    Earlier versions used --virtual-time-budget with --dump-dom. That clock runs ahead of the page's real work on a
+    busy machine (GitHub's runners), so a harness could be cut off before it finished.
+    """
     started = time.monotonic()
-    r = chromium(["--virtual-time-budget=600000", "--window-size=1280,800", "--dump-dom", page.as_uri()])
-    m = re.search(r'<pre id="lb-results">(.*?)</pre>', r.stdout, re.DOTALL)
+    chrome = DevTools(page.as_uri())
+    dom, problem = "", None
+    try:
+        targets = chrome.call("Target.getTargets")["targetInfos"]
+        target = next(t for t in targets if t["type"] == "page")
+        chrome.session = chrome.call("Target.attachToTarget", {"targetId": target["targetId"], "flatten": True})[
+            "sessionId"]
+        while time.monotonic() - started < timeout:
+            if chrome.evaluate("!!document.getElementById('lb-results')"):
+                dom = chrome.evaluate("document.documentElement.outerHTML") or ""
+                break
+            time.sleep(0.25)
+        else:
+            problem = f"no results after {timeout} s"
+    except (OSError, RuntimeError, TimeoutError, StopIteration, KeyError, ValueError) as e:  # a failed check
+        problem = f"{type(e).__name__}: {e}"
+    log = chrome.close()
+    m = re.search(r'<pre id="lb-results">(.*?)</pre>', dom, re.DOTALL)
     if not m:
-        took = f"chrome exit {r.returncode} after {time.monotonic() - started:.1f} s, {len(r.stdout)} bytes of page; "
-        return [{"name": "harness finished (" + page.name + ")", "ok": False,
-                 "info": took + (r.stderr or r.stdout)[-400:]}], r.stdout
-    return json.loads(html.unescape(m.group(1))), r.stdout
+        took = f"{problem or 'no results'}, after {time.monotonic() - started:.1f} s; "
+        return [{"name": "harness finished (" + page.name + ")", "ok": False, "info": took + log[-400:]}], dom
+    return json.loads(html.unescape(m.group(1))), dom
 
 
 def main():

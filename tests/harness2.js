@@ -21,6 +21,9 @@
   const lb = window.litebox;
   const $ = (id) => document.getElementById(id);
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  // Waits for the browser to draw a frame. Lazy thumbnails load when the grid is drawn; under headless Chrome's
+  // simulated time a setTimeout wait can pass before any frame is drawn on a slow machine, so count frames instead.
+  const frame = () => new Promise((r) => requestAnimationFrame(() => r()));
   const text = (id) => $(id).textContent;
   const visible = (id) => !$(id).hidden && $(id).getClientRects().length > 0;
   async function settled() {           // wait for the viewer's photo to load or fail
@@ -69,7 +72,7 @@
     ok('album title and count', text('title') === 'Unsorted' && text('meta') === '5 photos', [text('title'), text('meta')]);
     ok('back to albums link shows', visible('back'));
     const grid = $('grid');
-    for (let t = 0; t < 30 && !(grid.children[0].firstChild.src || '').startsWith('data:'); t++) await sleep(100);
+    for (let t = 0; t < 120 && !(grid.children[0].firstChild.src || '').startsWith('data:'); t++) await frame();
     ok('visible tiles get their thumbnails', (grid.children[0].firstChild.src || '').startsWith('data:image/jpeg'));
     ok('tiles are labelled with the description or file name',
       grid.children[0].getAttribute('aria-label') === 'h #1 & more.jpg' &&

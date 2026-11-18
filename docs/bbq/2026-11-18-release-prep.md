@@ -82,3 +82,9 @@ The request, word for word:
 - Chris asked, word for word, to add this badge to the README:
   `[![AI framework: pitmaster](https://img.shields.io/badge/AI_framework-pitmaster-yellow)](https://github.com/MapleSyrupOS/pitmaster)`
   (written as HTML to match the README's centred badge row).
+- Chris's word on tagging: "Push first, then tag 80a986b", then "Push, then tag 872dd5e". Neither was tagged: Tests
+  failed on GitHub both times. **Withdrawn: my "a bigger virtual-time budget fixes it" (872dd5e).** The cause was
+  headless Chrome's simulated clock (`--virtual-time-budget`): on a busy machine it runs ahead of the page's real
+  work, so a harness could be cut off (once after 1.8 real seconds, with 600 simulated ones spent). Reproduced here
+  by loading all four cores. `tests/run.py` now runs each test page on a real clock and asks the page over
+  Chrome's DevTools pipe whether its harness has finished: 10 runs out of 10 passed under load.
