@@ -6,4 +6,4 @@ change the ADR and run the script again. An ADR's own header outranks this table
 | ADR | Decision | Kind | Status | Built |
 |---|---|---|---|---|
 | [ADR-001](ADR-001-set-up-litebox-with-the-smallest-agent-setup.md) | Set litebox up for agents with the smallest set of pitmaster pieces, and add more only when needed | process | accepted | landed |
-| [ADR-002](ADR-002-make-each-release-as-a-checked-draft-before-publishing.md) | litebox releases are immutable, so each one is made as a draft on a commit whose checks passed, checked, and only then published | process | proposed | landed |
+| [ADR-002](ADR-002-make-each-release-as-a-checked-draft-before-publishing.md) | litebox releases are immutable, so each one is made as a draft on a commit whose checks passed, checked, and only then published | process | accepted | landed |

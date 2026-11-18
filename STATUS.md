@@ -13,13 +13,13 @@ The project's live state. Update it when work lands. Every claim cites at least 
 - Logo in the header bar and as the tab icon, embedded in the page; a Header text setting in setup (`assets/logo.png`, `docs/bbq/2026-11-18-second-round.md`).
 - Setup reworked: "Load photos" / "Update photos" only reads them and shows a green check with the time; litebox.html is saved or downloaded only by its own button, and closing setup or the tab with anything unsaved warns first (`litebox.html`, `docs/bbq/2026-11-18-second-round.md`).
 - Release prep: Apache-2.0 `LICENSE`, license headers, a user-facing README, and GitHub workflows for lint and tests with shared setup and caching (`README.md`, `.github/workflows/lint.yml`, `.github/workflows/test.yml`, `docs/bbq/2026-11-18-release-prep.md`).
+- ADR-002 ratified: every release is made as a checked draft, then published (`docs/decisions/ADR-002-make-each-release-as-a-checked-draft-before-publishing.md`, `docs/releasing.md`).
 - **v0.1.0 released** on 2026-11-18: tag `v0.1.0` on `5a3e74a`, with `litebox.html` attached (`CHANGELOG.md`).
 - Pushed to github.com/tholent/litebox on 2026-11-18; Lint (ruff, ESLint, license headers) and Tests pass there, with the pip and npm caches in use (`.github/workflows/lint.yml`, `.github/workflows/test.yml`).
 - Automated tests pass in headless Chromium, on a real clock: 144 checks, run with `python3 tests/run.py` (`tests/run.py`).
 
 ## Next
 
-- Chris to rule on ADR-002, draft-first releases (proposed) (`docs/decisions/ADR-002-make-each-release-as-a-checked-draft-before-publishing.md`).
 - Try v0.1.0 on a real USB stick on Windows and macOS (Chrome and Safari), the one check the blind review asked for that no test covers (`docs/bbq/2026-11-18-release-prep.md`).
 - Chris to try the second round on the 231 real images: open `litebox.html#setup`, Load photos, set the header text, footer and dates, Download, then view it as a recipient would (`litebox.html`).
 

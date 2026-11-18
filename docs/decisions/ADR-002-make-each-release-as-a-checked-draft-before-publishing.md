@@ -1,6 +1,8 @@
 ---
-status: proposed
-status-note: drafted 2026-11-18 from Chris's answers; awaiting ratification
+status: accepted
+status-note: ratified by Chris on 2026-11-18
+ratified-by: Chris
+ratified-on: "2026-11-18"
 owner: Chris
 kind: process
 built: landed
@@ -42,3 +44,4 @@ immutable (`isImmutable: false`). Its history, including two failed test runs th
 
 - 2026-11-18: drafted by makeadr (light route) from Chris's answers ("Use my draft", "Mistakes are permanent",
   "Landed in docs/releasing.md"), after Chris asked for the checklist ("yes, please").
+- 2026-11-18: ratified by Chris ("ratify adr002"). Header before: `status: proposed`; `status-note: drafted 2026-11-18 from Chris's answers; awaiting ratification`.
