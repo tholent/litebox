@@ -51,6 +51,10 @@ Nothing owed.
   rotated photo) and drives headless Chromium through a refresh and the gallery, printing one structured result
   line. Firefox is checked by a headless screenshot; Safari and Windows are checked by Chris by hand.
   veto: a different split of what is automated.
+- **System files are ignored, not reported.** Names starting with a dot (macOS `._` copies, `.DS_Store`, hidden
+  folders), `Thumbs.db` and `desktop.ini` are left out silently. Added during the build. veto: report them too.
+- **Viewer extras.** A click on the black around a photo closes the viewer; F toggles full screen. Added during
+  the build. veto: drop either.
 - **No outside code.** Everything (EXIF reading, thumbnails, the viewer) is written into `litebox.html` itself;
   no libraries, packed or linked. veto: allow a packed library for a named job.
 
