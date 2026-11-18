@@ -172,19 +172,24 @@
     ok('#setup opens the setup panel', visible('setup'));
     ok('setup holds Refresh', visible('s-refresh') && /Refresh photos/.test(text('s-refresh')));
     ok('setup reports photos and albums', /8 photos in 4 albums/.test(text('s-photos')), text('s-photos'));
-    ok('setup shows the default settings', $('s-title').value === '' && $('s-footer').value === '' && $('s-dates').checked && $('s-seconds').value === '5');
-    $('s-title').value = 'Our family photos';
-    $('s-title').dispatchEvent(new Event('input', { bubbles: true }));
+    const ids = Array.from(document.querySelectorAll('[id]')).map((e) => e.id);
+    ok('every id on the page is used once', ids.length === new Set(ids).size,
+      ids.filter((id, i) => ids.indexOf(id) !== i));
+    ok('every setup field is a real input', ['s-header', 's-footer', 's-dates', 's-seconds']
+      .every((id) => $(id).tagName === 'INPUT' && $(id).closest('#setup')));
+    ok('setup shows the default settings', $('s-header').value === '' && $('s-footer').value === '' && $('s-dates').checked && $('s-seconds').value === '5');
+    $('s-header').value = 'Our family photos';
+    $('s-header').dispatchEvent(new Event('input', { bubbles: true }));
     ok('header text and tab title change straight away', text('brand-text') === 'Our family photos' &&
       document.title === 'Our family photos | litebox', [text('brand-text'), document.title]);
     ok('header text is drawn at full width', $('brand-text').scrollWidth > 60 &&
       $('brand-text').clientWidth === $('brand-text').scrollWidth, [$('brand-text').clientWidth, $('brand-text').scrollWidth]);
-    $('s-title').value = '  ';
-    $('s-title').dispatchEvent(new Event('input', { bubbles: true }));
+    $('s-header').value = '  ';
+    $('s-header').dispatchEvent(new Event('input', { bubbles: true }));
     ok('blank header text falls back to litebox', text('brand-text') === 'litebox' && document.title === 'litebox' &&
       lb.data.settings.title === '');
-    $('s-title').value = 'Our family photos';
-    $('s-title').dispatchEvent(new Event('input', { bubbles: true }));
+    $('s-header').value = 'Our family photos';
+    $('s-header').dispatchEvent(new Event('input', { bubbles: true }));
     $('s-footer').value = 'For Mum, with love';
     $('s-footer').dispatchEvent(new Event('input', { bubbles: true }));
     ok('footer line shows straight away', !$('footer').hidden && text('footer') === 'For Mum, with love');
@@ -227,7 +232,7 @@
     ok('a reopened file shows its header text', text('brand-text') === 'Our family photos');
     await nav('setup');
     ok('setup shows when the file was saved', /^This file was saved .+\.$/.test(text('s-saved')), text('s-saved'));
-    ok('setup shows the saved header text', $('s-title').value === 'Our family photos', $('s-title').value);
+    ok('setup shows the saved header text', $('s-header').value === 'Our family photos', $('s-header').value);
     window.confirm = () => true;
     $('s-close').click();
     window.confirm = realConfirm;

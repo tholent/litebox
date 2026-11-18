@@ -231,7 +231,7 @@ button, input { font: inherit; color: inherit; }
     <div class="row"><button class="btn primary" id="s-refresh" type="button">Refresh photos</button></div>
     <h3>Display</h3>
     <label>Header text
-      <input type="text" id="s-title" maxlength="60" placeholder="litebox">
+      <input type="text" id="s-header" maxlength="60" placeholder="litebox">
     </label>
     <label>Footer line
       <input type="text" id="s-footer" maxlength="200" placeholder="For example: For Mum, with love — Christmas 2026">
@@ -951,7 +951,7 @@ button, input { font: inherit; color: inherit; }
   function openSetup() {
     if (!viewer.hidden) closeViewer();
     const s = data.settings;
-    $('s-title').value = s.title;
+    $('s-header').value = s.title;
     $('s-footer').value = s.footer;
     $('s-dates').checked = !!s.showDates;
     $('s-seconds').value = s.slideSeconds;
@@ -979,7 +979,7 @@ button, input { font: inherit; color: inherit; }
   function readSetup() {
     const secs = Math.round(+$('s-seconds').value);
     data.settings = {
-      title: $('s-title').value.trim(),
+      title: $('s-header').value.trim(),
       footer: $('s-footer').value.trim(),
       showDates: $('s-dates').checked,
       slideSeconds: secs >= 2 && secs <= 20 ? secs : data.settings.slideSeconds,
@@ -988,7 +988,7 @@ button, input { font: inherit; color: inherit; }
     render();
     showDirty();
   }
-  for (const id of ['s-title', 's-footer', 's-dates', 's-seconds']) $(id).addEventListener('input', readSetup);
+  for (const id of ['s-header', 's-footer', 's-dates', 's-seconds']) $(id).addEventListener('input', readSetup);
   $('s-dates').addEventListener('change', readSetup);
   $('s-close').addEventListener('click', closeSetup);
   $('s-refresh').addEventListener('click', chooseFolder);

@@ -99,3 +99,11 @@ Nothing owed.
     Not confirmed with Chris yet.
   - Defaulted: **every saved file carries when it was saved, and setup shows it** ("This file was saved …"), so an
     old copy is easy to spot; the download message warns about the renaming. veto: drop the saved line.
+- 2026-11-18: Chris reported, word for word: "Same thing. header doesn't get saved, but the footer does. I'm using
+  153.6.0esr on macos".
+  - **Withdrawn: the download-name explanation above,** and the "did not reproduce" note before it. The real cause
+    was in litebox itself, on every browser: the Header text box and the setup panel's heading shared one id
+    (`s-title`), so litebox read the heading instead of the box, and the text typed there was never shown or
+    saved. The tests used the same id, so they typed into the heading and passed. Fixed by renaming the box
+    `s-header`; new checks fail on any repeated id and on a setup field that is not a real input.
+  - The saved-time line in setup and the download warning stay: both still hold true. veto as above.
