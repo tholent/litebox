@@ -40,7 +40,7 @@ def main():
     missing = [f for f in files if NEEDLE not in "".join((ROOT / f).read_text(encoding="utf-8").splitlines(True)[:40])]
     for f in missing:
         print("missing license header:", f)
-    print("litebox-headers: ok=%d missing=%d" % (len(files) - len(missing), len(missing)))
+    print(f"litebox-headers: ok={len(files) - len(missing)} missing={len(missing)}")
     return 1 if missing else 0
 
 

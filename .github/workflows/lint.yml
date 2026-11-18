@@ -25,6 +25,8 @@ jobs:
       - name: Python (ruff)
         run: ruff check --output-format=github .
       - name: JavaScript, including the script inside litebox.html (ESLint)
+        if: success() || failure()  # run every check, even after one fails
         run: npx eslint .
       - name: License headers
+        if: success() || failure()  # run every check, even after one fails
         run: python tests/check-headers.py

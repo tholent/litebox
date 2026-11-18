@@ -147,7 +147,7 @@ def photo_hashes():
 
 
 def inject(page_html: str, harness: str) -> str:
-    tag = '<script src="../manifest.js"></script><script src="../../%s"></script>' % harness
+    tag = f'<script src="../manifest.js"></script><script src="../../{harness}"></script>'
     head, sep, tail = page_html.rpartition("</body>")
     return head + tag + sep + tail
 
@@ -155,12 +155,12 @@ def inject(page_html: str, harness: str) -> str:
 def chromium(args):
     cmd = [CHROMIUM, "--headless", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
            "--allow-file-access-from-files", "--hide-scrollbars"] + CHROME_EXTRA + args
-    return subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+    return subprocess.run(cmd, capture_output=True, text=True, timeout=180, check=False)
 
 
 def run_page(page: Path):
     r = chromium(["--virtual-time-budget=60000", "--window-size=1280,800", "--dump-dom", page.as_uri()])
-    m = re.search(r'<pre id="lb-results">(.*?)</pre>', r.stdout, re.S)
+    m = re.search(r'<pre id="lb-results">(.*?)</pre>', r.stdout, re.DOTALL)
     if not m:
         return [{"name": "harness finished (" + page.name + ")", "ok": False,
                  "info": (r.stderr or r.stdout)[-600:]}], r.stdout
@@ -180,7 +180,7 @@ def main():
     page1.write_text(inject((ROOT / "litebox.html").read_text(encoding="utf-8"), "harness1.js"), encoding="utf-8")
     r1, dom1 = run_page(page1)
     results += r1
-    m = re.search(r'<pre id="lb-out">(.*?)</pre>', dom1, re.S)
+    m = re.search(r'<pre id="lb-out">(.*?)</pre>', dom1, re.DOTALL)
     rebuilt = base64.b64decode(html.unescape(m.group(1))).decode("utf-8") if m else None
     results.append({"name": "refresh produced a new litebox.html", "ok": bool(rebuilt), "info": None})
 
@@ -201,16 +201,16 @@ def main():
     src = (ROOT / "litebox.html").read_text(encoding="utf-8")
     results.append({"name": "litebox.html carries its license header",
                     "ok": "Licensed under the Apache License, Version 2.0" in src, "info": None})
-    src = re.sub(r"<!--.*?-->", "", src, flags=re.S)  # comments load nothing (the license header names a web page)
+    src = re.sub(r"<!--.*?-->", "", src, flags=re.DOTALL)  # comments load nothing (the license header names a web page)
     results.append({"name": "litebox.html names no internet address",
-                    "ok": not re.search(r"(https?:)?//[a-z0-9.-]+\.[a-z]{2,}", src, re.I), "info": None})
+                    "ok": not re.search(r"(https?:)?//[a-z0-9.-]+\.[a-z]{2,}", src, re.IGNORECASE), "info": None})
     results.append({"name": "litebox.html links no outside files",
-                    "ok": not re.search(r'<(script|link|img)[^>]+(src|href)=(?!["\']?data:)', src, re.I), "info": None})
+                    "ok": not re.search(r'<(script|link|img)[^>]+(src|href)=(?!["\']?data:)', src, re.IGNORECASE), "info": None})
 
     fails = [r for r in results if not r["ok"]]
     for f in fails:
         print("FAIL", f["name"], "—", json.dumps(f.get("info"), ensure_ascii=False))
-    print("litebox-tests: pass=%d fail=%d" % (len(results) - len(fails), len(fails)))
+    print(f"litebox-tests: pass={len(results) - len(fails)} fail={len(fails)}")
     if "--keep" not in sys.argv and not shots and not fails:
         shutil.rmtree(OUT)
     return 0 if not fails else 1
@@ -243,10 +243,10 @@ def screenshots():
     if firefox:
         subprocess.run([firefox, "--headless", "--window-size=1280,800",
                         "--screenshot", str(OUT / "firefox-gallery.png"), (DRIVE / "litebox.html").as_uri()],
-                       capture_output=True, timeout=120)
+                       capture_output=True, timeout=120, check=False)
         subprocess.run([firefox, "--headless", "--window-size=1280,800",
                         "--screenshot", str(OUT / "firefox-viewer.png"), viewer.as_uri()],
-                       capture_output=True, timeout=120)
+                       capture_output=True, timeout=120, check=False)
 
 
 if __name__ == "__main__":
