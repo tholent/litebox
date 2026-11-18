@@ -198,7 +198,8 @@
       ids.filter((id, i) => ids.indexOf(id) !== i));
     ok('every setup field is a real input', ['s-header', 's-footer', 's-dates', 's-seconds']
       .every((id) => $(id).tagName === 'INPUT' && $(id).closest('#setup')));
-    ok('setup shows the default settings', $('s-header').value === '' && $('s-footer').value === '' && $('s-dates').checked && $('s-seconds').value === '5');
+    ok('setup shows the default settings', $('s-header').value === '' && $('s-footer').value === '' && $('s-dates').checked && $('s-seconds').value === '5' &&
+      $('s-order').value === 'newest');
     $('s-header').value = 'Our family photos';
     $('s-header').dispatchEvent(new Event('input', { bubbles: true }));
     ok('header text and tab title change straight away', text('brand-text') === 'Our family photos' &&
@@ -216,13 +217,25 @@
     ok('footer line shows straight away', !$('footer').hidden && text('footer') === 'For Mum, with love');
     ok('the footer sticks to the bottom of the window', getComputedStyle($('footer')).position === 'sticky' &&
       getComputedStyle($('footer')).bottom === '0px');
+    // Order by folder and file name: numbers in order ("2 misc" before "10 scans"), loose photos after folders.
+    $('s-order').value = 'name';
+    $('s-order').dispatchEvent(new Event('change', { bubbles: true }));
+    const names = () => lb.list.map((p) => p.path.split('/').pop());
+    ok('"By folder and file name" reorders the album straight away', JSON.stringify(names()) === JSON.stringify(
+      ['b-rotated.jpg', 'c.png', 'd.webp', 'e.jpg', 'h #1 & more.jpg']), names());
+    $('s-order').value = 'newest';
+    $('s-order').dispatchEvent(new Event('change', { bubbles: true }));
+    ok('"Newest first" puts them back', names()[0] === 'h #1 & more.jpg' && names()[1] === 'b-rotated.jpg', names());
+    $('s-order').value = 'name';
+    $('s-order').dispatchEvent(new Event('change', { bubbles: true }));
     $('s-dates').checked = false;
     $('s-dates').dispatchEvent(new Event('change', { bubbles: true }));
     $('s-seconds').value = '8';
     $('s-seconds').dispatchEvent(new Event('input', { bubbles: true }));
     ok('unsaved changes are flagged', $('s-dirty').classList.contains('err'));
     ok('settings land in the data that gets saved', JSON.stringify(lb.data.settings) ===
-      JSON.stringify({ title: 'Our family photos', footer: 'For Mum, with love', showDates: false, slideSeconds: 8 }),
+      JSON.stringify({ title: 'Our family photos', footer: 'For Mum, with love', showDates: false, slideSeconds: 8,
+        order: 'name' }),
       lb.data.settings);
     const savedBack = JSON.parse(new DOMParser().parseFromString(lb.makeHtml(lb.data), 'text/html')
       .getElementById('litebox-data').textContent);
@@ -253,6 +266,10 @@
     // --- reopening a saved file: its header text shows, and setup says when it was saved
     lb.load(stampedBack);
     ok('a reopened file shows its header text', text('brand-text') === 'Our family photos');
+    const allNames = lb.list.map((p) => p.path.split('/').pop());
+    ok('a reopened file keeps "By folder and file name" for every photo', JSON.stringify(allNames) === JSON.stringify(
+      ['m.jpg', 'scan-001.jpg', 'a.jpg', 'b-rotated.jpg', 'c.png', 'd.webp', 'e.jpg', 'h #1 & more.jpg']), allNames);
+    ok('the All photos cover follows the order', $('albums').querySelector('img').src === lb.list[0].thumb);
     await nav('setup');
     ok('setup shows when the file was saved', /^This copy of .+ was saved .+\.$/.test(text('s-saved')), text('s-saved'));
     ok('setup shows the saved header text', $('s-header').value === 'Our family photos', $('s-header').value);

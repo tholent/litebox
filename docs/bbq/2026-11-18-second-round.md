@@ -131,3 +131,9 @@ Nothing owed.
 - 2026-11-18: Chris asked, word for word: "let's make the footer sticky".
   - **R16 Sticky footer.** The footer line stays at the bottom of the window while the photos scroll, with the
     header bar's see-through dark background. It still shows only when a footer line is set.
+- 2026-11-18, from `looseends`: Chris answered the open offers: a sort setting "Yes, add the setting"; the save
+  button labels "Keep it"; the saved-time line and rename warning "Keep both".
+  - **R17 Order.** Setup offers "Newest first" (the default) or "By folder and file name" (numbers in numeric
+    order), saved with the other settings; albums, All photos and search results follow it.
+  - Defaulted: **an album's cover is the first photo in the chosen order**, so with "By folder and file name" it is
+    the first by name, no longer the newest. veto: always the newest.

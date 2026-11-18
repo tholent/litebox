@@ -67,6 +67,11 @@ cat >> /tmp/litebox-notes.md <<'NOTES'
 Download `litebox.html` below, put it on a drive next to a folder called `photos`, open it in your browser and
 click **Set up litebox**. The [README](https://github.com/tholent/litebox#make-a-litebox-drive) walks through
 every step.
+
+### Checking your download
+
+This release is immutable: its `litebox.html` can never be swapped. To confirm a downloaded copy is the one
+published here, run `gh release verify-asset vX.Y.Z litebox.html -R tholent/litebox` (GitHub CLI).
 NOTES
 ```
 
