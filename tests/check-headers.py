@@ -15,7 +15,8 @@
 """Check that every source file in the repository carries the Apache-2.0 license header.
 
 Usage: python3 tests/check-headers.py
-Looks at the files git tracks (plus new ones not yet ignored) ending in .html, .js, .mjs or .py.
+Looks at the files git tracks (plus new ones not yet ignored), or every file when this is not a git
+clone, ending in .html, .js, .mjs or .py.
 Prints each file missing the header, then one line: "litebox-headers: ok=N missing=M". Exit 0 only when M=0.
 """
 import subprocess
@@ -28,8 +29,13 @@ NEEDLE = "Licensed under the Apache License, Version 2.0"
 
 
 def main():
-    listed = subprocess.run(["git", "ls-files", "--cached", "--others", "--exclude-standard"], cwd=ROOT,
-                            capture_output=True, text=True, check=True).stdout.split("\n")
+    try:
+        listed = subprocess.run(["git", "ls-files", "--cached", "--others", "--exclude-standard"], cwd=ROOT,
+                                capture_output=True, text=True, check=True).stdout.split("\n")
+    except (OSError, subprocess.CalledProcessError):  # not a git clone (a downloaded ZIP): walk the folder
+        skip = {".git", "node_modules", "out", "__pycache__"}
+        listed = [p.relative_to(ROOT).as_posix() for p in ROOT.rglob("*")
+                  if not skip.intersection(p.relative_to(ROOT).parts)]
     files = sorted(f for f in listed if f.endswith(SOURCE) and (ROOT / f).is_file())
     missing = [f for f in files if NEEDLE not in "".join((ROOT / f).read_text(encoding="utf-8").splitlines(True)[:40])]
     for f in missing:

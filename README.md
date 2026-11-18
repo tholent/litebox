@@ -37,13 +37,13 @@ person who receives it just looks at the photos.
 - **A details panel** for each photo: camera or scanner, lens, exposure, resolution, artist, copyright.
 - **Search** across descriptions, file names and album names.
 - **Your own words:** a header text at the top, and a footer line such as "For Mum, with love, Christmas 2026".
-- **Works everywhere, offline:** Chrome, Edge, Firefox and Safari on Windows, Mac and Linux.
+- **Made for any modern browser, offline:** Chrome, Edge, Firefox and Safari on Windows, Mac and Linux.
 - **Leaves your photos alone.** litebox only reads them. It never changes, moves or renames a photo, and never
   connects to the internet.
 
 ## Make a litebox drive
 
-1. **Get `litebox.html`.** Open [`litebox.html`](litebox.html) here and use the download button.
+1. **Get `litebox.html`.** Open [`litebox.html`](litebox.html) here and click **Download raw file**.
 2. **Lay out the drive.** Put `litebox.html` on the drive, and a folder called `photos` beside it. Each folder
    inside `photos` becomes an album.
 
@@ -59,6 +59,8 @@ person who receives it just looks at the photos.
 3. **Open `litebox.html`** in your browser and click **Set up litebox**.
 4. **Click Load photos** and choose the folder that holds `litebox.html` and `photos` (the drive itself, in the
    layout above). litebox reads every photo and makes small previews. A big collection takes a few minutes.
+   Your browser may ask to let the page edit files (Chrome, Edge) or to "upload" them (Firefox). Nothing leaves
+   your computer: the edit permission is only used to save `litebox.html` itself, never your photos.
 5. **Fill in the display settings:** the header text, the footer line, whether to show dates, and how long the
    slideshow stays on each photo. Changes show straight away.
 6. **Save.**
@@ -78,9 +80,9 @@ address in the browser's address bar, click **Update photos**, and save again.
 | --------------------------- | --------------------------------------------- |
 | Open an album or a photo    | Click it                                      |
 | Next or previous photo      | ← and → keys, or swipe                        |
-| Start or pause a slideshow  | **Slideshow** button, or the Space bar        |
+| Start or pause a slideshow  | **Slideshow** button, or Space while viewing  |
 | Full screen                 | **F**                                         |
-| Show the photo's details    | **I**, or the ⓘ button                        |
+| Show the photo's details    | **I**, or the **i** button                    |
 | Close the photo             | **Esc**, or click the dark area around it     |
 
 ## Good to know

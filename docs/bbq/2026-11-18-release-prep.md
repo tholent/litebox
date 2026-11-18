@@ -62,7 +62,17 @@ The request, word for word:
   "the remote will be: github.com/tholent/litebox".
   - `tholent/litebox` already existed, empty and **public**. Chris has admin rights on it, but the signed-in token
     cannot manage deploy keys (HTTP 403), so Chris adds the key on GitHub's website.
-  - Defaulted: **an ed25519 deploy key with no passphrase** at `~/.ssh/litebox_deploy`, with a `github-litebox`
-    host entry in `~/.ssh/config`, the same pattern as the existing `quadrule_deploy` key. `origin` is
-    `git@github-litebox:tholent/litebox.git`. veto: a passphrase, or HTTPS.
+  - Defaulted: **an ed25519 deploy key with no passphrase** on Chris's machine, with its own SSH host entry;
+    `origin` pushes through it over SSH. veto: a passphrase, or HTTPS.
   - Not pushed: pushing waits for Chris's word, and the first push makes everything public.
+
+## Release day (setfree)
+
+- 2026-11-18: Chris typed "setitfree" and chose, through setfree's questions: "Push, then v0.1.0", run the blind
+  tastetest first, and push the internal files "as they are".
+- Blind tastetest on what the push would publish: **READY**, nothing blocking. Fixed from its list: the README
+  now explains the browser's "edit files" / "upload" prompt on Load photos, the Space key, the **i** button and
+  GitHub's "Download raw file" button, and says "made for" any modern browser; `tests/check-headers.py` works
+  without git (a downloaded ZIP); the deploy-key note above no longer names local paths. Left open: the linters
+  and workflows have not run, and nobody has tried a real USB stick on Windows or macOS.
+- `CHANGELOG.md` added for 0.1.0.
