@@ -32,7 +32,6 @@ shows what it needs.
 - Agents have one place for rules (`AGENTS.md`) and one for live state (`STATUS.md`).
 - There is no separate session log or debt list yet; `STATUS.md`'s own Log and Known debt sections carry them.
 - The Plain words rules mention a glossary, but there is no `docs/glossary.md` yet; adding it is a later choice.
-- The one-line description of what litebox is, in `AGENTS.md`, is still a placeholder for Chris to fill in.
 
 ## History
 

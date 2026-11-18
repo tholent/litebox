@@ -12,7 +12,6 @@ The project's live state. Update it when work lands. Every claim cites at least 
 ## Next
 
 - Ratify or change ADR-001 (`docs/decisions/ADR-001-set-up-litebox-with-the-smallest-agent-setup.md`).
-- Fill in the one-line description of what litebox is (`AGENTS.md`).
 
 ## Known debt
 

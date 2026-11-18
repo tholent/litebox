@@ -3,7 +3,7 @@
 Read this first, every session. Every agent reads this file; `CLAUDE.md` points here.
 
 ## What this project is
-To be described by Chris (one line on what litebox is).
+litebox is a single file photo gallery that sits on a thumbdrive.
 
 ## Doctrine
 None yet. The owner sets one; agents do not invent it.
