@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>litebox</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAE50lEQVR42u2bP0wcRxTGv/dm9v6wBxFxaywXAcXEEsGFK8spweCKQxREjuT+CqdxSgSlCaYAWSZt7MgCCkdxQUA6xzadZVtRjKCw5IL4GmjAtz7udnYmxbEnnMLc3e6Zg7snTYNOw3y/eW/mzcxbGhsb4/HxcT05OWlfv3592HXdi8zMOIGmtdaWZT1/8ODBYiqVyhpjijrfvn37dTab/cc0iGWz2deZTOYcANDq6mprT0/Pi0Qi0QlAASCcbDMApOM4bzY3Ny/Izs7O4QPiJRrDlG3bX7W2tn7PWuuL+1QIjWMEwAghLvjrXSOJL0GIRqOK0cCmtSYOoZNjDYGDij/uKUPVo1dKgZmxuLiI+fl5AIDneY0BQCkFKSXS6TRGR0exu/u+uMEac/IB+OJXVlYwNJSE67qIx2PHNgRkNeKXl1eQTCYBGBDRsXT9ij3g4Mwnk0l4nodIJHos3b5iD/i/23ueQiQSrXjmtdaBt00iAjODiD4PAK31R25/ULwQouItM6xt0xgTCgRZzqCXlpYwMjICpRQikUhVMc/MePnyFZ49ewbHyYKIUG70EBUFCyFx/vw36O+/AiE4FAjyU4SZGXt7e7hx40c4zge0tbVBKVXRLPnt5s2fMDMzA9ctBJ61y5e/w717v6KjoyNwMnZoCHieB2aGlFbF8au1hhACt27dwu3bU2hr+wK2bQdeA54+fYJr137A8vKfkFIG8gQu5x9Wk+QUXVZgd/c97t6dQywWLy2oQZrrumhv/xJPnvyFdDoNZg60sNYskfeBvXv3L7a2tiClDO3g5M/42trrwBlozU8ynufV5MRojIHWwXOQhr4PaAJoAmgCaAJoAmgCaAJoAmgCaAJoAqid1fLSNIy+aw6gpaUFlmXVpO94PF6/AJiLd3ZnzpxBV1cXcrkPoYDwL0CktHDp0qXS3+rSA7TWsCwLExPjAICdnR0QUaDmui52d3eQSqXQ29sb+E6wpgCEENDaoL+/Hw8f/o6enh4YY1AoFFAoFJDP58tq/u+VUjh16hTGxycwNfUztNa1uxUOLxQIWmtcvTqIgYEr2NjYgOM4VV2LSylx9uxZtLe3hza+z1IUxcylh5Tu7u7A/VX6KHPkAPxw8N8IghgRhSb+swLwBx/Wm14zE6wnD9BaQykFz/PqYob9d4NyQiUUAIlEAlJKSCkbywOKW5OFx48fw3VduK4b6gJV+XgAIRj5fB4tLTaGh5OHJkkyqOvH43HMzf2CO3fu1MF8EopVv8D9+7+BiA7NFGUY8Wbb9pHHvhCi9PS+sLCAvr6+stLk0BbBI93KmLG3lwNAWFiYR19fX6ms58Rvg8wM13VL4gcGBsoWf+wB+OKJqhNfdggcrMw66lgvHoyK4guFQiDxZQMoHl33QFQf1eFEBKUUotEo5uerF18WACLC6dOnobVGNBo9cgC+A3qexvT0NAYHqxf/SQC+q8diMTx69EfdVIQWvdDAsizEYrFSHWPNMkEiClzZVSsL43uFstDVaz1wGFWnZe8CJ9GY2fD+ombQeGby+bxkIcTzj04RDSIeAHme94rW19dbOzo6Xti23VCfzuZyuTeO41wAAGQymXOO47xulI+nHcdZ297e7gYAMsYwEenZ2dnE0NDQKDN/G4lEoLWmk7bg7dcb/726unp/ZGQka4zh/wDBonTwghBFLgAAAABJRU5ErkJggg==">
 <style>
 :root {
   --bg: #0c0c0d;
@@ -31,7 +32,10 @@ button, input { font: inherit; color: inherit; }
 .bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
   padding: 10px 16px; background: rgba(12, 12, 13, .9); border-bottom: 1px solid var(--line);
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-.brand { font-weight: 650; letter-spacing: .03em; background: none; border: 0; padding: 0; cursor: pointer; }
+.brand { display: flex; align-items: center; gap: 9px; max-width: min(40rem, 100%); min-width: 0; font-weight: 650;
+  letter-spacing: .03em; background: none; border: 0; padding: 0; cursor: pointer; }
+.brand img { width: 28px; height: 28px; flex: none; }
+.brand span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .back { background: none; border: 0; padding: 2px 6px 2px 0; color: var(--accent); cursor: pointer; white-space: nowrap; }
 .where { flex: 1; min-width: 8rem; display: flex; align-items: baseline; gap: 8px; overflow: hidden; }
 .title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -50,6 +54,7 @@ button, input { font: inherit; color: inherit; }
   :root { --tile: 104px; --album: 150px; }
   .bar { padding: 8px 12px; }
   .search { order: 5; width: 100%; }
+  .brand { flex-basis: 100%; }
 }
 
 .notice { margin: 12px 16px 0; padding: 10px 14px; border: 1px solid var(--accent); border-radius: 8px;
@@ -157,7 +162,7 @@ button, input { font: inherit; color: inherit; }
 </head>
 <body>
 <header class="bar">
-  <button class="brand" id="home" type="button">litebox</button>
+  <button class="brand" id="home" type="button"><img id="logo" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFQAAABUCAYAAAAcaxDBAAAEjUlEQVR42u2dz2tcVRiGn/fOZKxVK5UWbLFUsaBWadF25UYXYqzLdici/glu1IX/gMWlFFy1iEut6EapiLpT0NoaIpJUsCpIbVY2qS1J5n4u5hxyCaVm7pwzM3fme2EgDMPce56833fOd37cEYCZFZLK8PcB4EngbsBw3UoCVoCLki5VGcrMJMnMbBdwEjgB3OvMtqR/gI+BNyUtmZlkZgVwH/A18ET4oLk7t+RShb9/AZ4FlhTsegZ4FVgFZiofdN1eBqwBHeADSa/IzB4G5oBtm6i7tg7VghkPt4GjwPbwpsOsF/oEQx4tAkw8Zw7sUoDthbNIC9aBJlYxhDBwoAlUTmsHV2SCWQA3gK4DHUzd8J0/AS8HuFOldmKYLeAS8AKwM1Rd7tABYC4Az0u6EoB6Dq2h9QrMWUmXzUzhfQdaw5ltYDE483cz60ia2qqrSBjmf5hZa1qdOSjQCLPqzJakLlOu9oDOnI3OTAizzFRlKXNlWAtoWXHmbGJnxnnFnI2O42SNA9BYAS1kghknt38D5oHlhA2/BzgM7Nt0vZEBjTewBLyYCeZV4HXgrKTrqRtqZjuAl4C36S1CZoHaD9AiAL0cFvZSlJVxEuVv4DlJ86HxreQJVLoGvGdmF4HPgR2V3DqyHNoGOpJuhsF7qs7iNUnzZtYB1nKMFsL9diR9Z2ZvAacqHezIhk0pl5djTl4EPgobBVZzFQXhe1dDdL0P/BVg2iiBplRMGRckDaUYiP+skKPnNt1H44FGLQ/5XhTCf2VcJ0cap+BUOdAJnxxxOVAH6kAdqMuBOlAH6nKgDtSBuhyoA3WgLgfqQDPJJhXosM9JxevcOWlA47UPhZXI7EDj0reZbWPjoLAmCWgZGnZMUhnW5XNqJjwX4ASwn429TsnUHoOQN+BdM5uT9GdwUSvDNUpJq2b2KPAOmbbijDqHxlB/CPjKzI4BSFpP/OoChZkdB74E9uRq/zg4NIb+AeAz4LyZXQCuJbzGTuAIcKji2JHuvhsWVIWGH8l0nXiNsdgfOqxevyTPgbGCMdzBPCywjS04vPR0oA7UgbrGt1Nq6hFF1R2rtjPfVJOf6hChlv2Uwu2MrvwZeLqhMFv0nkixHzhNHydGkgOt7GNfAb5tqj3DuaZT9M40lVvtb9oZb6hJIR/DuyVpzcweAM4BB/uBmRVocKo1yJER5l56B8MO0juq3hcjHzZtwOwGmOfoTXqv1zFc4TBvCbNbN3oLh6mume0Bvqg4s/aKQeEwbW+A+fggzhykU4on0WTWvEIoPG+66syBcmYKoGXTevDNw7lUHVAqoDPWs2bRQKgCSjPbB3w6aAc0CNCYax8Evm/4pEcXuB/Y1W+dnsOhdwCPTUi/1FcFlDWHTgDMbI8cqgPUqyuH40Abm0oK4N9KXnHVz8kANwrgfIDqP6hSs1YIr5vAD4WkX4EPQ/ivOdS+Ya4FdmclLcS6fDfwTWWM6W7dWpjHUF8EngGuVn+gaje9jajH6T18z/X/WgY+Ad6QdMXMirjnvPoTao8ATwF3uUtv687rwI+SFqoM/wMA4NJ0Eqr9QAAAAABJRU5ErkJggg=="><span id="brand-text">litebox</span></button>
   <div class="where">
     <button class="back" id="back" type="button" hidden>&#8249; Albums</button>
     <span class="title" id="title"></span>
@@ -224,6 +229,9 @@ button, input { font: inherit; color: inherit; }
       litebox.html. Run it again whenever photos are added, removed or changed.</p>
     <div class="row"><button class="btn primary" id="s-refresh" type="button">Refresh photos</button></div>
     <h3>Display</h3>
+    <label>Header text
+      <input type="text" id="s-title" maxlength="60" placeholder="litebox">
+    </label>
     <label>Footer line
       <input type="text" id="s-footer" maxlength="200" placeholder="For example: For Mum, with love — Christmas 2026">
     </label>
@@ -271,7 +279,8 @@ button, input { font: inherit; color: inherit; }
   const HEAD_BYTES = 512 * 1024;
   const WORKERS = 4;
   const UNSORTED = '';            // album key for photos straight in photos/
-  const DEFAULTS = { footer: '', showDates: true, slideSeconds: 5 };
+  const DEFAULTS = { title: '', footer: '', showDates: true, slideSeconds: 5 };
+  const NAME = 'litebox';
   // Descriptions some cameras write by themselves; not worth showing.
   const PLACEHOLDERS = new Set(['OLYMPUS DIGITAL CAMERA', 'SONY DSC', 'DIGITAL CAMERA', 'KODAK DIGITAL STILL CAMERA',
     'MINOLTA DIGITAL CAMERA', 'KONICA MINOLTA DIGITAL CAMERA', 'PENTAX DIGITAL CAMERA', 'DIGITAL STILL CAMERA',
@@ -636,6 +645,8 @@ button, input { font: inherit; color: inherit; }
     $('empty').hidden = n > 0;
     $('search').hidden = n === 0;
     $('nothing').hidden = true;
+    $('brand-text').textContent = data.settings.title || NAME;
+    document.title = $('home').title = data.settings.title || NAME;
     $('footer').textContent = data.settings.footer;
     $('footer').hidden = !data.settings.footer;
     if (!n) {
@@ -934,6 +945,7 @@ button, input { font: inherit; color: inherit; }
   function openSetup() {
     if (!viewer.hidden) closeViewer();
     const s = data.settings;
+    $('s-title').value = s.title;
     $('s-footer').value = s.footer;
     $('s-dates').checked = !!s.showDates;
     $('s-seconds').value = s.slideSeconds;
@@ -959,6 +971,7 @@ button, input { font: inherit; color: inherit; }
   function readSetup() {
     const secs = Math.round(+$('s-seconds').value);
     data.settings = {
+      title: $('s-title').value.trim(),
       footer: $('s-footer').value.trim(),
       showDates: $('s-dates').checked,
       slideSeconds: secs >= 2 && secs <= 20 ? secs : data.settings.slideSeconds,
@@ -967,7 +980,7 @@ button, input { font: inherit; color: inherit; }
     render();
     showDirty();
   }
-  for (const id of ['s-footer', 's-dates', 's-seconds']) $(id).addEventListener('input', readSetup);
+  for (const id of ['s-title', 's-footer', 's-dates', 's-seconds']) $(id).addEventListener('input', readSetup);
   $('s-dates').addEventListener('change', readSetup);
   $('s-close').addEventListener('click', closeSetup);
   $('s-refresh').addEventListener('click', chooseFolder);

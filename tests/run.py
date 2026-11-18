@@ -186,7 +186,7 @@ def main():
     results.append({"name": "litebox.html names no internet address",
                     "ok": not re.search(r"(https?:)?//[a-z0-9.-]+\.[a-z]{2,}", src, re.I), "info": None})
     results.append({"name": "litebox.html links no outside files",
-                    "ok": not re.search(r'<(script|link|img)[^>]+(src|href)=', src, re.I), "info": None})
+                    "ok": not re.search(r'<(script|link|img)[^>]+(src|href)=(?!["\']?data:)', src, re.I), "info": None})
 
     fails = [r for r in results if not r["ok"]]
     for f in fails:

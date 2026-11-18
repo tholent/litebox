@@ -68,3 +68,18 @@ The rulings on the open questions, word for word:
 ## Owed
 
 Nothing owed.
+
+## Later changes
+
+- 2026-11-18: Chris added a logo and a header-text setting. His words, word for word: "here is a logo to
+  incorporate into the top header. Please allow the header text to be customized in the settings" (with the logo
+  image, kept as `assets/logo.png`), and "can't the logo be embedded in the html page like the thumbnails?" (it is:
+  the page carries it as text, and the drive still holds only `litebox.html` and `photos/`).
+  - **R9 Logo.** The logo sits at the left of the header bar, before the header text.
+  - **R10 Header text.** A "Header text" setting in setup replaces "litebox" in the header bar.
+  - Defaulted: **an empty Header text shows "litebox".** veto: an empty field shows the logo alone.
+  - Defaulted: **the browser tab shows the header text as its title, and the logo as its icon** (the icon with the
+    logo's cut-outs filled dark, so it shows on a light tab bar too). veto: the tab keeps "litebox", or no icon.
+  - Defaulted: **on phones the logo and header text take the top line of the bar**, so a long header text never
+    squeezes the album name and count; on wider screens they share one line, and a very long text ends in "…"
+    with the full text on hover. veto: one line on phones too.

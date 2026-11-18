@@ -10,11 +10,12 @@ The project's live state. Update it when work lands. Every claim cites at least 
 - First decision ratified: the smallest agent setup (`docs/decisions/ADR-001-set-up-litebox-with-the-smallest-agent-setup.md`).
 - First working gallery built to the bbq's rules: grid, viewer, captions with EXIF date and description, slideshow, and a Refresh that rebuilds the file's own photo list and thumbnails (`litebox.html`, `docs/bbq/2026-11-18-first-working-gallery.md`).
 - Second round built: albums from top-level folders (album grid first), search, optional dates, footer line, slideshow speed slider, an EXIF details panel, and setup with Refresh hidden behind `#setup` (`litebox.html`, `docs/bbq/2026-11-18-second-round.md`).
-- Automated tests pass in headless Chromium: 107 checks, run with `python3 tests/run.py` (`tests/run.py`).
+- Logo in the header bar and as the tab icon, embedded in the page; a Header text setting in setup (`assets/logo.png`, `docs/bbq/2026-11-18-second-round.md`).
+- Automated tests pass in headless Chromium: 112 checks, run with `python3 tests/run.py` (`tests/run.py`).
 
 ## Next
 
-- Chris to try the second round on the 231 real images: open `litebox.html#setup`, Refresh, set the footer and dates, Save, then view it as a recipient would (`litebox.html`).
+- Chris to try the second round on the 231 real images: open `litebox.html#setup`, Refresh, set the header text, footer and dates, Save, then view it as a recipient would (`litebox.html`).
 
 ## Known debt
 

@@ -108,7 +108,7 @@
     // A tricky description must not break out of the page's data block.
     const tricky = JSON.parse(JSON.stringify(d));
     tricky.photos[0].description = '</script><b>x</b>' + String.fromCharCode(0x2028);
-    tricky.settings = { footer: '</script> footer', showDates: false, slideSeconds: 9 };
+    tricky.settings = { title: '</script> title', footer: '</script> footer', showDates: false, slideSeconds: 9 };
     const html = lb.makeHtml(d);
     const parsed = new DOMParser().parseFromString(lb.makeHtml(tricky), 'text/html');
     const back = JSON.parse(parsed.getElementById('litebox-data').textContent);

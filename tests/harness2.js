@@ -41,6 +41,10 @@
     ok('no Refresh or Settings anywhere on the page', !Array.from(document.querySelectorAll('button'))
       .some((b) => b.offsetParent !== null && /refresh|setting/i.test(b.textContent)));
     ok('footer hidden while the footer line is empty', $('footer').hidden);
+    ok('header shows the logo', $('logo').complete && $('logo').naturalWidth === 84 && /^data:image\/png/.test($('logo').src));
+    ok('header text and tab title default to litebox', text('brand-text') === 'litebox' && document.title === 'litebox',
+      [text('brand-text'), document.title]);
+    ok('the page carries its own tab icon', /^data:image\/png/.test(document.querySelector('link[rel=icon]').href));
 
     // --- open an album
     $('albums').children[4].click();
@@ -168,7 +172,16 @@
     ok('#setup opens the setup panel', visible('setup'));
     ok('setup holds Refresh', visible('s-refresh') && /Refresh photos/.test(text('s-refresh')));
     ok('setup reports photos and albums', /8 photos in 4 albums/.test(text('s-photos')), text('s-photos'));
-    ok('setup shows the default settings', $('s-footer').value === '' && $('s-dates').checked && $('s-seconds').value === '5');
+    ok('setup shows the default settings', $('s-title').value === '' && $('s-footer').value === '' && $('s-dates').checked && $('s-seconds').value === '5');
+    $('s-title').value = 'Our family photos';
+    $('s-title').dispatchEvent(new Event('input', { bubbles: true }));
+    ok('header text and tab title change straight away', text('brand-text') === 'Our family photos' &&
+      document.title === 'Our family photos', [text('brand-text'), document.title]);
+    $('s-title').value = '  ';
+    $('s-title').dispatchEvent(new Event('input', { bubbles: true }));
+    ok('blank header text falls back to litebox', text('brand-text') === 'litebox' && lb.data.settings.title === '');
+    $('s-title').value = 'Our family photos';
+    $('s-title').dispatchEvent(new Event('input', { bubbles: true }));
     $('s-footer').value = 'For Mum, with love';
     $('s-footer').dispatchEvent(new Event('input', { bubbles: true }));
     ok('footer line shows straight away', !$('footer').hidden && text('footer') === 'For Mum, with love');
@@ -178,10 +191,12 @@
     $('s-seconds').dispatchEvent(new Event('input', { bubbles: true }));
     ok('unsaved changes are flagged', $('s-dirty').classList.contains('err'));
     ok('settings land in the data that gets saved', JSON.stringify(lb.data.settings) ===
-      JSON.stringify({ footer: 'For Mum, with love', showDates: false, slideSeconds: 8 }), lb.data.settings);
+      JSON.stringify({ title: 'Our family photos', footer: 'For Mum, with love', showDates: false, slideSeconds: 8 }),
+      lb.data.settings);
     const savedBack = JSON.parse(new DOMParser().parseFromString(lb.makeHtml(lb.data), 'text/html')
       .getElementById('litebox-data').textContent);
-    ok('a saved file carries the settings', savedBack.settings.footer === 'For Mum, with love' && savedBack.settings.showDates === false);
+    ok('a saved file carries the settings', savedBack.settings.title === 'Our family photos' &&
+      savedBack.settings.footer === 'For Mum, with love' && savedBack.settings.showDates === false);
     const realConfirm = window.confirm;
     let asked = false;
     window.confirm = () => { asked = true; return true; };
