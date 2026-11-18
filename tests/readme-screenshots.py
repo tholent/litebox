@@ -34,7 +34,7 @@ from pathlib import Path
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import run  # noqa: E402  (the test runner: its real-clock Chrome helpers)
+import run  # the test runner: its real-clock Chrome helpers
 
 ROOT = Path(__file__).resolve().parent.parent
 DRIVE = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else ROOT / "samples" / "drive"
