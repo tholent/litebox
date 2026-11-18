@@ -1,4 +1,4 @@
-// Run 2: open the rebuilt litebox and check the grid, viewer, keys and slideshow.
+// Run 2: open the rebuilt litebox and check albums, search, the viewer, info panel, keys, slideshow and setup.
 // photos/c.png has been moved off the test drive, to check the "not on the drive any more" message.
 (async function () {
   'use strict';
@@ -8,6 +8,7 @@
   const $ = (id) => document.getElementById(id);
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const text = (id) => $(id).textContent;
+  const visible = (id) => !$(id).hidden && $(id).getClientRects().length > 0;
   async function settled() {           // wait for the viewer's photo to load or fail
     for (let i = 0; i < 100; i++) {
       const img = $('v-img');
@@ -15,74 +16,195 @@
       await sleep(50);
     }
   }
+  async function nav(hash) { location.hash = hash; await sleep(60); }
   const key = (k) => document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
+  async function type(value) {
+    $('search').value = value;
+    $('search').dispatchEvent(new Event('input', { bubbles: true }));
+    await sleep(10);
+  }
+  const albumNames = () => Array.from($('albums').children).map((a) => a.querySelector('.name').textContent);
+  const infoRows = () => {
+    const dts = Array.from($('v-info-list').children).filter((x) => x.tagName === 'DT');
+    return Object.fromEntries(dts.map((dt) => [dt.textContent, dt.nextSibling.textContent]));
+  };
 
   try {
-    const grid = $('grid');
-    ok('grid shows six tiles', grid.children.length === 6, grid.children.length);
-    ok('"No photos yet" is hidden', $('empty').hidden);
-    ok('header counts the photos', text('meta').startsWith('6 photos · updated '), text('meta'));
+    // --- the album grid is the opening view
+    ok('opens on the album grid', visible('albums') && $('grid').hidden);
+    ok('albums in name order, numbers in order, Unsorted last, after "All photos"',
+      JSON.stringify(albumNames()) === JSON.stringify(['All photos', '2 misc', '10 scans', '2021 lake', 'Unsorted']),
+      albumNames());
+    ok('album counts', Array.from($('albums').children).map((a) => a.querySelector('.n').textContent).join('|') ===
+      '8 photos|1 photo|1 photo|1 photo|5 photos');
+    ok('header counts albums and photos', text('meta') === '4 albums · 8 photos', text('meta'));
+    ok('no Refresh or Settings anywhere on the page', !Array.from(document.querySelectorAll('button'))
+      .some((b) => b.offsetParent !== null && /refresh|setting/i.test(b.textContent)));
+    ok('footer hidden while the footer line is empty', $('footer').hidden);
+
+    // --- open an album
+    $('albums').children[4].click();
+    await sleep(60);
+    ok('clicking an album shows its photos', visible('grid') && $('grid').children.length === 5 && lb.album === '',
+      [$('grid').children.length, lb.album]);
+    ok('address names the album, so Back works', location.hash === '#album=', location.hash);
+    ok('album title and count', text('title') === 'Unsorted' && text('meta') === '5 photos', [text('title'), text('meta')]);
+    ok('back to albums link shows', visible('back'));
     await sleep(200);
+    const grid = $('grid');
     ok('visible tiles get their thumbnails', (grid.children[0].firstChild.src || '').startsWith('data:image/jpeg'));
     ok('tiles are labelled with the description or file name',
       grid.children[0].getAttribute('aria-label') === 'h #1 & more.jpg' &&
       grid.children[1].getAttribute('aria-label') === 'Café on the corner – ünïcode',
       [grid.children[0].getAttribute('aria-label'), grid.children[1].getAttribute('aria-label')]);
 
+    // --- the viewer inside an album
     grid.children[0].click();
     ok('clicking a tile opens the viewer', !$('viewer').hidden && lb.index === 0);
     await settled();
     ok('full-size photo loads from a name with # and &', $('v-img').naturalWidth === 900, $('v-img').naturalWidth);
     ok('caption: file name', text('v-file') === 'h #1 & more.jpg', text('v-file'));
     ok('caption: date taken', /2024/.test(text('v-when')) && !/file date/.test(text('v-when')), text('v-when'));
-    ok('counter', text('v-count') === '1 / 6', text('v-count'));
-
+    ok('counter counts within the album', text('v-count') === '1 / 5', text('v-count'));
     key('ArrowRight');
     await settled();
     ok('right arrow steps forward', lb.index === 1);
     ok('caption: EXIF description', text('v-desc') === 'Café on the corner – ünïcode', text('v-desc'));
     ok('rotated photo shows the right way up', $('v-img').naturalWidth === 400 && $('v-img').naturalHeight === 800,
       [$('v-img').naturalWidth, $('v-img').naturalHeight]);
-
     lb.next();
     await settled();
     ok('a photo missing from the drive says so', !$('v-missing').hidden && $('v-img').hidden);
     ok('file-date fallback is labelled', /file date/.test(text('v-when')), text('v-when'));
-
     lb.next();
     await settled();
     ok('the missing message clears on the next photo', $('v-missing').hidden && !$('v-img').hidden);
-    ok('caption: description of a.jpg', text('v-desc') === 'Lake at dawn', text('v-desc'));
-
+    ok('caption: description of d.webp', text('v-desc') === 'Christmas morning', text('v-desc'));
     key('ArrowLeft');
     ok('left arrow steps back', lb.index === 2);
-    lb.open(5);
+    lb.open(4);
     ok('camera placeholder shows no description', text('v-desc') === '', text('v-desc'));
     lb.next();
-    ok('stepping past the last photo wraps to the first', lb.index === 0);
+    ok('stepping past the last photo wraps to the first of the album', lb.index === 0);
     key('Escape');
     ok('Esc closes the viewer', $('viewer').hidden);
     ok('focus returns to the photo grid', document.activeElement && document.activeElement.classList.contains('tile'));
 
+    // --- info panel
+    await nav('album=10%20scans');
+    ok('albums open from the address', lb.album === '10 scans' && $('grid').children.length === 1, lb.album);
+    lb.open(0);
+    ok('details panel starts closed', $('v-info').hidden);
+    key('i');
+    ok('I opens the details panel', !$('v-info').hidden && $('v-info-btn').getAttribute('aria-pressed') === 'true');
+    const rows = infoRows();
+    ok('details: scanner, resolution, software, artist, copyright',
+      rows.Camera === 'EPSON Perfection V600' && rows.Resolution === '600 dpi' && rows.Software === 'Epson Scan 2' &&
+      rows.Artist === 'Chris W' && rows.Copyright === '© Family archive', rows);
+    ok('details: file, album, size, file size', rows.File === 'scan-001.jpg' && rows.Album === '10 scans' &&
+      rows.Size === '700 × 500 pixels' && /KB$/.test(rows['File size']), rows);
+    ok('details: a scan shows its file date', /2018/.test(rows['File date'] || ''), rows);
+    ok('details: no camera fields a scan lacks', !('Exposure' in rows) && !('Lens' in rows), rows);
+    $('v-info-btn').click();
+    ok('the ⓘ button closes it again', $('v-info').hidden);
+    $('v-info-btn').click();
+    key('Escape');
+
+    await nav('album=2%20misc');
+    ok('a folder two deep belongs to its top-level album', $('grid').children.length === 1 && lb.list[0].path === 'photos/2 misc/deep/m.jpg');
+    lb.open(0);
+    ok('details panel remembered as open', !$('v-info').hidden);
+    const r2 = infoRows();
+    ok('details: phone camera fields', r2.Camera === 'Apple iPhone 15' && r2.Lens === 'iPhone 15 back camera' &&
+      r2.Exposure === '1/250 s' && r2.Aperture === 'f/1.8' && r2.ISO === '64' && r2['Focal length'] === '6.9 mm', r2);
+    key('i');
+    key('Escape');
+
+    // --- search
+    $('back').click();
+    await sleep(60);
+    ok('"‹ Albums" goes back to the album grid', visible('albums') && lb.album === null);
+    ok('search box shows, searching everything from the album grid', visible('search') && $('search').placeholder === 'Search all photos');
+    await type('christmas');
+    ok('search by description', $('grid').children.length === 1 && lb.list[0].path === 'photos/d.webp' &&
+      text('meta') === '1 match', [lb.list.map((p) => p.path), text('meta')]);
+    await type('cafe corner');
+    ok('search ignores accents and needs every word', lb.list.length === 1 && lb.list[0].path === 'photos/b-rotated.jpg',
+      lb.list.map((p) => p.path));
+    await type('lake');
+    ok('search matches album names', lb.list.length === 1 && lb.list[0].path === 'photos/2021 lake/a.jpg', lb.list.map((p) => p.path));
+    await type('scan-001');
+    ok('search matches file names', lb.list.length === 1, lb.list.map((p) => p.path));
+    await type('zebra');
+    ok('no match says so', visible('nothing') && /zebra/.test(text('nothing')) && $('grid').hidden);
+    await type('');
+    ok('clearing search brings the albums back', visible('albums'));
+    await nav('album=');
+    await type('christmas');
+    ok('inside an album, search covers that album', $('search').placeholder === 'Search this album' && lb.list.length === 1);
+    await type('lake');
+    ok('…and only that album', lb.list.length === 0);
+    await type('');
+
+    // --- slideshow and its speed slider
     lb.slideMs = 120;
     $('play-all').click();
-    ok('Slideshow opens the viewer at the newest photo', !$('viewer').hidden && lb.index === 0 && lb.playing);
+    ok('Slideshow plays the album from its newest photo', !$('viewer').hidden && lb.index === 0 && lb.playing);
+    ok('speed slider shows while the slideshow runs', visible('v-speed'));
     await sleep(400);
     ok('slideshow advances on its own', lb.index >= 2, lb.index);
+    $('v-speed-range').value = 7;
+    $('v-speed-range').dispatchEvent(new Event('input', { bubbles: true }));
+    ok('slider sets the seconds per photo', lb.slideMs === 7000 && text('v-speed-out') === '7 s', [lb.slideMs, text('v-speed-out')]);
     key(' ');
-    const paused = lb.index;
-    ok('Space pauses the slideshow', !lb.playing);
-    await sleep(300);
-    ok('paused slideshow stays put', lb.index === paused, [paused, lb.index]);
+    ok('Space pauses the slideshow and hides the slider', !lb.playing && $('v-speed').hidden);
     key(' ');
     ok('Space starts it again', lb.playing);
     key('Escape');
     ok('Esc stops the slideshow', !lb.playing && $('viewer').hidden);
 
-    $('refresh').click();
-    ok('Refresh opens the refresh panel', !$('panel').hidden && /Choose the folder/.test($('p-body').textContent));
+    // --- hidden setup
+    await nav('setup');
+    ok('#setup opens the setup panel', visible('setup'));
+    ok('setup holds Refresh', visible('s-refresh') && /Refresh photos/.test(text('s-refresh')));
+    ok('setup reports photos and albums', /8 photos in 4 albums/.test(text('s-photos')), text('s-photos'));
+    ok('setup shows the default settings', $('s-footer').value === '' && $('s-dates').checked && $('s-seconds').value === '5');
+    $('s-footer').value = 'For Mum, with love';
+    $('s-footer').dispatchEvent(new Event('input', { bubbles: true }));
+    ok('footer line shows straight away', !$('footer').hidden && text('footer') === 'For Mum, with love');
+    $('s-dates').checked = false;
+    $('s-dates').dispatchEvent(new Event('change', { bubbles: true }));
+    $('s-seconds').value = '8';
+    $('s-seconds').dispatchEvent(new Event('input', { bubbles: true }));
+    ok('unsaved changes are flagged', $('s-dirty').classList.contains('err'));
+    ok('settings land in the data that gets saved', JSON.stringify(lb.data.settings) ===
+      JSON.stringify({ footer: 'For Mum, with love', showDates: false, slideSeconds: 8 }), lb.data.settings);
+    const savedBack = JSON.parse(new DOMParser().parseFromString(lb.makeHtml(lb.data), 'text/html')
+      .getElementById('litebox-data').textContent);
+    ok('a saved file carries the settings', savedBack.settings.footer === 'For Mum, with love' && savedBack.settings.showDates === false);
+    const realConfirm = window.confirm;
+    let asked = false;
+    window.confirm = () => { asked = true; return true; };
+    $('s-close').click();
+    window.confirm = realConfirm;
+    ok('closing with unsaved changes asks first', asked);
+    ok('closing setup leaves the address without #setup', $('setup').hidden && location.hash !== '#setup', location.hash);
+    ok('slideshow default follows the setting', lb.slideMs === 8000, lb.slideMs);
+    lb.open(0);
+    await settled();
+    ok('dates hidden from captions', text('v-when') === '', text('v-when'));
+    key('i');
+    ok('dates hidden from details', !('Taken' in infoRows()) && !('File date' in infoRows()), infoRows());
+    key('i');
     key('Escape');
-    ok('Esc closes the refresh panel', $('panel').hidden);
+
+    // --- a drive with no subfolders skips the album grid
+    const flat = JSON.parse(JSON.stringify(lb.data));
+    flat.photos = flat.photos.filter((p) => p.path.split('/').length === 2);
+    lb.load(flat);
+    await nav('');
+    ok('no subfolders: photos show straight away', visible('grid') && $('albums').hidden && $('grid').children.length === 5);
+    ok('no subfolders: no back link or album title', $('back').hidden && text('title') === '');
   } catch (err) {
     ok('harness 2 ran without errors', false, String((err && err.stack) || err));
   }

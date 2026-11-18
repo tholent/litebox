@@ -7,7 +7,8 @@ Usage: python3 tests/run.py [--screenshots] [--keep]
    (EXIF dates and descriptions, a rotated photo, PNG, WebP, a broken file, formats browsers can't show,
    hidden system files) and files outside photos/ that must be ignored.
 2. Run 1 (tests/harness1.js) refreshes the empty litebox from those files and checks the photo list.
-3. Run 2 (tests/harness2.js) opens the rebuilt litebox and checks the grid, viewer, keys and slideshow,
+3. Run 2 (tests/harness2.js) opens the rebuilt litebox and checks albums, search, the viewer, info panel,
+   keys, slideshow and the hidden setup,
    with one photo removed from the drive to check the "not on the drive any more" message.
 4. Checks the photos were not changed, and that litebox.html loads nothing from the internet.
 
@@ -31,6 +32,7 @@ from datetime import datetime
 from pathlib import Path
 
 from PIL import Image, ImageDraw
+from PIL.TiffImagePlugin import IFDRational
 
 ROOT = Path(__file__).resolve().parent.parent
 TESTS = ROOT / "tests"
@@ -40,8 +42,12 @@ PHOTOS = DRIVE / "photos"
 CHROMIUM = shutil.which("chromium") or shutil.which("chromium-browser") or shutil.which("google-chrome")
 
 
-def exif_bytes(taken=None, description=None, orientation=None):
+def exif_bytes(taken=None, description=None, orientation=None, ifd0=None, exif=None):
     ex = Image.Exif()
+    for tag, value in (ifd0 or {}).items():
+        ex[tag] = value.encode("utf-8") if isinstance(value, str) else value
+    for tag, value in (exif or {}).items():
+        ex.get_ifd(0x8769)[tag] = value.encode("utf-8") if isinstance(value, str) else value
     if description is not None:
         ex[0x010E] = description.encode("utf-8")
     if orientation:
@@ -67,6 +73,8 @@ def build_drive():
     if OUT.exists():
         shutil.rmtree(OUT)
     (PHOTOS / "2021 lake").mkdir(parents=True)
+    (PHOTOS / "10 scans").mkdir()
+    (PHOTOS / "2 misc" / "deep").mkdir(parents=True)
     (PHOTOS / ".hidden").mkdir()
     shutil.copy(ROOT / "litebox.html", DRIVE / "litebox.html")
 
@@ -84,6 +92,18 @@ def build_drive():
         PHOTOS / "e.jpg", exif=exif_bytes("2019:05:05 05:05:05", "OLYMPUS DIGITAL CAMERA"))
     picture(900, 600, [(30, 30, 30), (240, 180, 60), (30, 30, 30)]).save(
         PHOTOS / "h #1 & more.jpg", exif=exif_bytes("2024:07:07 07:07:07"))
+    # A scan: scanner details, 600 dpi, no date taken.
+    picture(700, 500, [(120, 100, 70), (200, 180, 140)]).save(
+        PHOTOS / "10 scans" / "scan-001.jpg", dpi=(600, 600),
+        exif=exif_bytes(ifd0={0x010F: "EPSON", 0x0110: "Perfection V600", 0x0131: "Epson Scan 2",
+                              0x011A: IFDRational(600, 1), 0x011B: IFDRational(600, 1), 0x0128: 2,
+                              0x013B: "Chris W", 0x8298: "© Family archive"}))
+    # A phone photo two folders deep: it belongs to the album "2 misc".
+    picture(800, 600, [(20, 90, 120), (230, 120, 60)]).save(
+        PHOTOS / "2 misc" / "deep" / "m.jpg",
+        exif=exif_bytes("2025:02:02 12:00:00", ifd0={0x010F: "Apple", 0x0110: "iPhone 15"},
+                        exif={0x829A: IFDRational(1, 250), 0x829D: IFDRational(9, 5), 0x8827: 64,
+                              0x920A: IFDRational(686, 100), 0xA434: "iPhone 15 back camera"}))
     (PHOTOS / "broken.jpg").write_bytes(b"\xff\xd8\xff\xe0 not really a photo")
     (PHOTOS / "clip.mp4").write_bytes(b"\x00\x00\x00\x18ftypmp42")
     (PHOTOS / "IMG_0002.HEIC").write_bytes(b"\x00\x00\x00\x18ftypheic")
@@ -95,6 +115,8 @@ def build_drive():
 
     c_time = time.mktime(datetime(2022, 3, 4, 12, 0, 0).timetuple())
     os.utime(PHOTOS / "c.png", (c_time, c_time))
+    s_time = time.mktime(datetime(2018, 1, 1, 12, 0, 0).timetuple())
+    os.utime(PHOTOS / "10 scans" / "scan-001.jpg", (s_time, s_time))
 
     files = []
     for p in sorted(DRIVE.rglob("*")):
@@ -179,11 +201,23 @@ def screenshots():
     viewer = DRIVE / "shot-viewer.html"
     page = (DRIVE / "litebox.html").read_text(encoding="utf-8")
     head, sep, tail = page.rpartition("</body>")
-    viewer.write_text(head + "<script>litebox.open(1)</script>" + sep + tail, encoding="utf-8")
+    viewer.write_text(head + "<script>location.hash='all';setTimeout(()=>litebox.open(2),0)</script>" + sep + tail,
+                      encoding="utf-8")
+    info = DRIVE / "shot-info.html"
+    info.write_text(head + "<script>location.hash='album=10%20scans';setTimeout(()=>{litebox.open(0);"
+                    "document.getElementById('v-info-btn').click()},0)</script>" + sep + tail, encoding="utf-8")
+    setup = DRIVE / "shot-setup.html"
+    setup.write_text(head + "<script>location.hash='setup'</script>" + sep + tail, encoding="utf-8")
     chromium(["--virtual-time-budget=5000", "--window-size=1280,800",
               "--screenshot=" + str(OUT / "chromium-gallery.png"), (DRIVE / "litebox.html").as_uri()])
     chromium(["--virtual-time-budget=5000", "--window-size=1280,800",
               "--screenshot=" + str(OUT / "chromium-viewer.png"), viewer.as_uri()])
+    chromium(["--virtual-time-budget=5000", "--window-size=1280,800",
+              "--screenshot=" + str(OUT / "chromium-info.png"), info.as_uri()])
+    chromium(["--virtual-time-budget=5000", "--window-size=1280,800",
+              "--screenshot=" + str(OUT / "chromium-setup.png"), setup.as_uri()])
+    chromium(["--virtual-time-budget=5000", "--window-size=1280,800",
+              "--screenshot=" + str(OUT / "chromium-all.png"), (DRIVE / "litebox.html").as_uri() + "#all"])
     chromium(["--virtual-time-budget=5000", "--window-size=390,844",
               "--screenshot=" + str(OUT / "chromium-phone.png"), (DRIVE / "litebox.html").as_uri()])
     firefox = shutil.which("firefox")

@@ -18,25 +18,39 @@
   --on-accent: #1a1408;
   --danger: #e8766b;
   --tile: 168px;
+  --album: 210px;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--text);
   font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-button { font: inherit; color: inherit; }
+body { min-height: 100vh; display: flex; flex-direction: column; }
+main { flex: 1; }
+button, input { font: inherit; color: inherit; }
 [hidden] { display: none !important; }
 
-.bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px;
+.bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
   padding: 10px 16px; background: rgba(12, 12, 13, .9); border-bottom: 1px solid var(--line);
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-.brand { font-weight: 650; letter-spacing: .03em; }
-.meta { flex: 1; min-width: 0; color: var(--muted); font-size: 13px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand { font-weight: 650; letter-spacing: .03em; background: none; border: 0; padding: 0; cursor: pointer; }
+.back { background: none; border: 0; padding: 2px 6px 2px 0; color: var(--accent); cursor: pointer; white-space: nowrap; }
+.where { flex: 1; min-width: 8rem; display: flex; align-items: baseline; gap: 8px; overflow: hidden; }
+.title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meta { color: var(--muted); font-size: 13px; white-space: nowrap; }
+.search { width: 16rem; max-width: 100%; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--raise); }
+.search::placeholder { color: var(--faint); }
 .btn { background: var(--raise-2); border: 1px solid var(--line); border-radius: 8px;
   padding: 6px 12px; cursor: pointer; white-space: nowrap; }
 .btn:hover { border-color: #3d3d43; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
 .btn:disabled { opacity: .5; cursor: default; }
-.btn:focus-visible, .tile:focus-visible, .vbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn:focus-visible, .tile:focus-visible, .album:focus-visible, .vbtn:focus-visible, .back:focus-visible,
+.brand:focus-visible, .search:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 640px) {
+  :root { --tile: 104px; --album: 150px; }
+  .bar { padding: 8px 12px; }
+  .search { order: 5; width: 100%; }
+}
 
 .notice { margin: 12px 16px 0; padding: 10px 14px; border: 1px solid var(--accent); border-radius: 8px;
   background: rgba(233, 180, 76, .08); }
@@ -46,22 +60,36 @@ button { font: inherit; color: inherit; }
   aspect-ratio: 1 / 1; cursor: zoom-in; overflow: hidden; }
 .tile img { display: block; width: 100%; height: 100%; object-fit: cover; transition: opacity .15s; }
 .tile:hover img { opacity: .82; }
-@media (max-width: 560px) { :root { --tile: 104px; } .bar { padding: 8px 12px; } }
+
+.albums { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--album), 1fr)); gap: 20px 14px;
+  padding: 16px; }
+.album { display: block; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; }
+.album .cover { display: block; aspect-ratio: 1 / 1; background: var(--raise); border-radius: 6px; overflow: hidden;
+  box-shadow: 5px -5px 0 -1px var(--raise-2), 5px -5px 0 0 var(--line); }
+.album img { display: block; width: 100%; height: 100%; object-fit: cover; transition: opacity .15s; }
+.album:hover img { opacity: .85; }
+.album .name { display: block; margin-top: 8px; font-weight: 600; overflow-wrap: anywhere; }
+.album .n { display: block; color: var(--muted); font-size: 13px; }
+.nothing { padding: 48px 16px; text-align: center; color: var(--muted); }
 
 .empty { max-width: 36rem; margin: 10vh auto; padding: 0 16px; text-align: center; color: var(--muted); }
 .empty h1 { color: var(--text); font-size: 22px; font-weight: 600; margin: 0 0 12px; }
 .empty pre { display: inline-block; text-align: left; margin: 12px 0; padding: 12px 18px; color: var(--text);
   background: var(--raise); border: 1px solid var(--line); border-radius: 8px; font-size: 14px; }
 
-.viewer:focus { outline: none; }
+.foot { padding: 14px 16px 18px; text-align: center; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
+
 .viewer { position: fixed; inset: 0; z-index: 20; background: #000; display: flex; flex-direction: column;
   align-items: center; touch-action: pan-y pinch-zoom; }
+.viewer:focus { outline: none; }
 .stage { flex: 1; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center;
   padding: 64px 68px 0; }
+.viewer.with-info .stage, .viewer.with-info .caption { padding-right: 340px; }
 .stage img { max-width: 100%; max-height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none;
   -webkit-user-drag: none; }
 .missing { color: var(--muted); text-align: center; max-width: 28rem; }
-.caption { width: 100%; max-width: 72ch; padding: 12px 16px 18px; text-align: center; min-height: 64px; }
+.caption { width: 100%; padding: 12px 16px 18px; text-align: center; min-height: 64px; }
+.caption > div { max-width: 72ch; margin: 0 auto; }
 .desc { font-size: 17px; }
 .when { color: var(--muted); font-size: 13px; margin-top: 2px; }
 .file { color: var(--faint); font-size: 12px; margin-top: 2px; overflow-wrap: anywhere; }
@@ -72,20 +100,50 @@ button { font: inherit; color: inherit; }
 .vbtn.on { color: var(--accent); }
 .prev { left: 12px; top: 50%; transform: translateY(-50%); }
 .next { right: 12px; top: 50%; transform: translateY(-50%); }
+.viewer.with-info .next { right: 332px; }
 .close { right: 12px; top: 12px; }
 .play { right: 64px; top: 12px; font-size: 16px; }
-.full { right: 116px; top: 12px; }
+.info { right: 116px; top: 12px; font-size: 18px; font-family: Georgia, serif; font-style: italic; font-weight: 700; }
+.full { right: 168px; top: 12px; }
 .count { position: absolute; left: 18px; top: 24px; color: var(--muted); font-size: 13px; transition: opacity .3s; }
+.speed { position: absolute; left: 50%; top: 16px; transform: translateX(-50%); display: flex; align-items: center;
+  gap: 10px; padding: 6px 14px; border-radius: 999px; background: rgba(28, 28, 31, .8); color: var(--muted);
+  font-size: 13px; transition: opacity .3s; }
+.speed input { width: 9rem; accent-color: var(--accent); }
+.speed output { color: var(--text); min-width: 2.6em; text-align: right; }
 .viewer.idle { cursor: none; }
-.viewer.idle .vbtn, .viewer.idle .count { opacity: 0; }
-@media (max-width: 560px) { .stage { padding: 64px 0 0; } .prev, .next { display: none; } }
+.viewer.idle .vbtn, .viewer.idle .count, .viewer.idle .speed { opacity: 0; }
+.panel-info { position: absolute; right: 0; top: 0; bottom: 0; width: 320px; padding: 68px 18px 18px;
+  overflow: auto; background: rgba(18, 18, 20, .96); border-left: 1px solid var(--line); }
+.panel-info h3 { margin: 0 0 10px; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .06em; }
+.panel-info dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; font-size: 13px; }
+.panel-info dt { color: var(--muted); }
+.panel-info dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .stage { padding: 64px 0 0; }
+  .prev, .next { display: none; }
+  .viewer.with-info .stage, .viewer.with-info .caption { padding-right: 0; }
+  .panel-info { top: auto; left: 0; width: auto; max-height: 45vh; padding-top: 18px; border-left: 0;
+    border-top: 1px solid var(--line); }
+  .speed { top: 64px; }
+}
 
 .panel-wrap { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 16px;
   background: rgba(0, 0, 0, .72); }
+.panel-wrap.top { z-index: 40; }
 .panel { width: min(36rem, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 20px;
   background: var(--raise); border: 1px solid var(--line); border-radius: 12px; }
 .panel h2 { margin: 0 0 8px; font-size: 18px; font-weight: 600; }
+.panel h3 { margin: 18px 0 6px; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .06em; }
 .panel p { margin: 8px 0; color: #d3cfc9; }
+.panel label { display: block; margin: 10px 0; }
+.panel label.check { display: flex; align-items: center; gap: 8px; }
+.panel input[type=text], .panel input[type=number] { display: block; width: 100%; margin-top: 4px; padding: 7px 10px;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--bg); }
+.panel input[type=number] { width: 6rem; display: inline-block; margin: 0 6px 0 0; }
+.panel input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; }
 .progress { height: 6px; margin: 14px 0 6px; background: var(--raise-2); border-radius: 3px; overflow: hidden; }
 .progress div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
 .small { color: var(--muted); font-size: 13px; }
@@ -94,51 +152,95 @@ button { font: inherit; color: inherit; }
 .panel summary { cursor: pointer; }
 .panel ul { max-height: 12rem; overflow: auto; margin: 6px 0; padding-left: 20px; font-size: 13px; overflow-wrap: anywhere; }
 .actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 </style>
 </head>
 <body>
 <header class="bar">
-  <span class="brand">litebox</span>
-  <span class="meta" id="meta"></span>
+  <button class="brand" id="home" type="button">litebox</button>
+  <div class="where">
+    <button class="back" id="back" type="button" hidden>&#8249; Albums</button>
+    <span class="title" id="title"></span>
+    <span class="meta" id="meta"></span>
+  </div>
+  <input class="search" id="search" type="search" placeholder="Search" aria-label="Search photos" autocomplete="off" hidden>
   <button class="btn" id="play-all" type="button" hidden>&#9654; Slideshow</button>
-  <button class="btn" id="refresh" type="button">Refresh</button>
 </header>
 <div class="notice" id="notice" hidden></div>
-<main class="grid" id="grid" aria-label="Photos"></main>
-<section class="empty" id="empty" hidden>
-  <h1>No photos yet</h1>
-  <p>Put your photos in a folder called <b>photos</b> next to this file:</p>
-  <pre>your drive/
+<main id="main">
+  <div class="albums" id="albums" hidden></div>
+  <div class="grid" id="grid" aria-label="Photos" hidden></div>
+  <p class="nothing" id="nothing" hidden></p>
+  <section class="empty" id="empty" hidden>
+    <h1>No photos yet</h1>
+    <p>Put your photos in a folder called <b>photos</b> next to this file. Each folder inside it becomes an album:</p>
+    <pre>your drive/
 ├── litebox.html
 └── photos/
-    ├── holiday 2024/
+    ├── Holiday 2024/
+    ├── Grandpa's slides/
     └── IMG_0001.jpg</pre>
-  <p>Then press <b>Refresh</b> and pick the folder that holds litebox.html.
-  litebox only reads your photos. It never changes, moves or renames them.</p>
-</section>
+    <p>Then set litebox up. It only reads your photos; it never changes, moves or renames them.</p>
+    <p><button class="btn primary" id="setup-start" type="button">Set up litebox</button></p>
+  </section>
+</main>
+<footer class="foot" id="footer" hidden></footer>
 
 <div class="viewer" id="viewer" hidden tabindex="-1" role="dialog" aria-modal="true" aria-label="Photo viewer">
   <span class="count" id="v-count"></span>
   <div class="stage" id="v-stage">
     <img id="v-img" alt="">
-    <p class="missing" id="v-missing" hidden>This photo isn't on the drive any more.
-      Press Refresh to bring litebox up to date.</p>
+    <p class="missing" id="v-missing" hidden>This photo isn't on the drive any more.</p>
   </div>
   <div class="caption">
     <div class="desc" id="v-desc"></div>
     <div class="when" id="v-when"></div>
     <div class="file" id="v-file"></div>
   </div>
+  <aside class="panel-info" id="v-info" hidden aria-label="Photo details">
+    <h3>Details</h3>
+    <dl id="v-info-list"></dl>
+  </aside>
+  <label class="speed" id="v-speed" hidden>Seconds per photo
+    <input type="range" id="v-speed-range" min="2" max="20" step="1" value="5">
+    <output id="v-speed-out">5 s</output>
+  </label>
   <button class="vbtn prev" id="v-prev" type="button" aria-label="Previous photo">&#8249;</button>
   <button class="vbtn next" id="v-next" type="button" aria-label="Next photo">&#8250;</button>
   <button class="vbtn full" id="v-full" type="button" aria-label="Full screen" title="Full screen (F)">&#10530;</button>
+  <button class="vbtn info" id="v-info-btn" type="button" aria-label="Photo details" aria-pressed="false" title="Details (I)">i</button>
   <button class="vbtn play" id="v-play" type="button" aria-label="Start slideshow" title="Slideshow (Space)">&#9654;</button>
   <button class="vbtn close" id="v-close" type="button" aria-label="Close" title="Close (Esc)">&#10005;</button>
 </div>
 
-<div class="panel-wrap" id="panel" hidden>
+<div class="panel-wrap" id="setup" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="s-title">
+    <h2 id="s-title">Set up litebox</h2>
+    <p class="small">For the person preparing this drive. People viewing the photos never see this page.
+      To come back to it, add <b>#setup</b> to the end of the address.</p>
+    <h3>Photos</h3>
+    <p id="s-photos"></p>
+    <p class="small">Refresh reads every photo in the photos folder, makes small previews, and saves an updated
+      litebox.html. Run it again whenever photos are added, removed or changed.</p>
+    <div class="row"><button class="btn primary" id="s-refresh" type="button">Refresh photos</button></div>
+    <h3>Display</h3>
+    <label>Footer line
+      <input type="text" id="s-footer" maxlength="200" placeholder="For example: For Mum, with love — Christmas 2026">
+    </label>
+    <label class="check"><input type="checkbox" id="s-dates"> Show dates</label>
+    <label>Slideshow: <input type="number" id="s-seconds" min="2" max="20" step="1"> seconds per photo</label>
+    <h3>Save</h3>
+    <p class="small" id="s-dirty">Changes here show straight away, but are kept only once saved into litebox.html.</p>
+    <div class="actions">
+      <button class="btn" id="s-close" type="button">Close</button>
+      <button class="btn primary" id="s-save" type="button">Save settings</button>
+    </div>
+  </div>
+</div>
+
+<div class="panel-wrap top" id="panel" hidden>
   <div class="panel" role="dialog" aria-modal="true" aria-labelledby="p-title">
-    <h2 id="p-title">Refresh litebox</h2>
+    <h2 id="p-title"></h2>
     <div id="p-body"></div>
     <div class="progress" id="p-progress" hidden><div id="p-bar"></div></div>
     <div class="small" id="p-count"></div>
@@ -148,12 +250,12 @@ button { font: inherit; color: inherit; }
 </div>
 <input type="file" id="picker" webkitdirectory multiple hidden>
 
-<script id="litebox-data" type="application/json">{"version":1,"refreshed":null,"photos":[],"skipped":[]}</script>
+<script id="litebox-data" type="application/json">{"version":2,"refreshed":null,"settings":{},"photos":[],"skipped":[]}</script>
 <script>
 (function () {
   'use strict';
 
-  // The page's own source, captured before anything changes, so refresh can save a copy with a new photo list.
+  // The page's own source, captured before anything changes, so litebox can save a copy with new data.
   const SOURCE = '<!doctype html>\n' + document.documentElement.outerHTML;
   const DATA_OPEN = '<scr' + 'ipt id="litebox-data" type="application/json">';
   const DATA_CLOSE = '</scr' + 'ipt>';
@@ -168,23 +270,40 @@ button { font: inherit; color: inherit; }
   const THUMB_QUALITY = 0.72;
   const HEAD_BYTES = 512 * 1024;
   const WORKERS = 4;
+  const UNSORTED = '';            // album key for photos straight in photos/
+  const DEFAULTS = { footer: '', showDates: true, slideSeconds: 5 };
   // Descriptions some cameras write by themselves; not worth showing.
   const PLACEHOLDERS = new Set(['OLYMPUS DIGITAL CAMERA', 'SONY DSC', 'DIGITAL CAMERA', 'KODAK DIGITAL STILL CAMERA',
     'MINOLTA DIGITAL CAMERA', 'KONICA MINOLTA DIGITAL CAMERA', 'PENTAX DIGITAL CAMERA', 'DIGITAL STILL CAMERA',
     'EXIF_JPEG_PICTURE', 'SAMSUNG', 'SAMSUNG CAMERA PICTURES', 'LG CAMERA', 'CAMERA', 'IMAGE', 'PICASA', 'DEFAULT',
     'DCIM', 'HDR', 'JPEG', 'JFIF', 'SCREENSHOT']);
+  const LINE_SEPS = new RegExp('[' + String.fromCharCode(0x2028, 0x2029) + ']', 'g');
 
   const $ = (id) => document.getElementById(id);
-  const lb = window.litebox = { slideMs: 5000 };
+  const lb = window.litebox = {};
 
-  let data = readData();
+  let data = normalise(readData());
+  lb.slideMs = remembered('slideSeconds', data.settings.slideSeconds) * 1000;
 
   function readData() {
+    try { return JSON.parse($('litebox-data').textContent); } catch (e) { return null; }
+  }
+  function normalise(d) {
+    d = d && Array.isArray(d.photos) ? d : { photos: [], skipped: [] };
+    d.version = 2;
+    d.settings = Object.assign({}, DEFAULTS, d.settings || {});
+    d.skipped = d.skipped || [];
+    return d;
+  }
+  function remembered(key, fallback) {
     try {
-      const d = JSON.parse($('litebox-data').textContent);
-      if (d && Array.isArray(d.photos)) return d;
-    } catch (e) { /* fall through */ }
-    return { version: 1, refreshed: null, photos: [], skipped: [] };
+      const v = parseFloat(localStorage.getItem('litebox.' + key));
+      if (v >= 2 && v <= 20) return v;
+    } catch (e) { /* no storage */ }
+    return fallback;
+  }
+  function remember(key, value) {
+    try { localStorage.setItem('litebox.' + key, String(value)); } catch (e) { /* no storage */ }
   }
 
   // ---------- small helpers ----------
@@ -209,6 +328,7 @@ button { font: inherit; color: inherit; }
   }
   const baseName = (path) => path.split('/').pop();
   const photoUrl = (path) => path.split('/').map(encodeURIComponent).join('/');
+  const plural = (n, one, many) => n.toLocaleString() + ' ' + (n === 1 ? one : many);
   function fmtSize(bytes) {
     return bytes >= 1048576 ? (bytes / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(bytes / 1024)) + ' KB';
   }
@@ -218,8 +338,29 @@ button { font: inherit; color: inherit; }
     if (text != null) e.textContent = text;
     return e;
   }
+  const fold = (s) => (s || '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 
-  // ---------- reading EXIF (date taken, description) ----------
+  // ---------- albums ----------
+
+  function albumOf(p) {
+    const parts = p.path.split('/');
+    return parts.length > 2 ? parts[1] : UNSORTED;
+  }
+  const albumName = (key) => (key === UNSORTED ? 'Unsorted' : key);
+  function albumList() {
+    const map = new Map();
+    for (const p of data.photos) {
+      const k = albumOf(p);
+      if (!map.has(k)) map.set(k, []);
+      map.get(k).push(p);
+    }
+    const keys = Array.from(map.keys()).sort((a, b) => (a === UNSORTED ? 1 : b === UNSORTED ? -1 :
+      a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })));
+    return keys.map((k) => ({ key: k, name: albumName(k), photos: map.get(k) }));
+  }
+  const hasFolders = () => data.photos.some((p) => albumOf(p) !== UNSORTED);
+
+  // ---------- reading EXIF ----------
 
   function ascii(bytes, start, n) {
     let s = '';
@@ -237,6 +378,7 @@ button { font: inherit; color: inherit; }
     if (!m || m[1] === '0000' || m[2] === '00') return null;
     return m[1] + '-' + m[2] + '-' + m[3] + 'T' + m[4] + ':' + m[5] + ':' + m[6];
   }
+  const TYPE_SIZE = { 1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 7: 1, 9: 4, 10: 8 };
   function readTiff(bytes, view, s, len) {
     const end = Math.min(s + len, bytes.length);
     const order = ascii(bytes, s, 2);
@@ -256,17 +398,55 @@ button { font: inherit; color: inherit; }
       }
       return out;
     }
-    function text(t) {
-      if (!t || (t.type !== 2 && t.type !== 7) || t.count === 0) return '';
-      const o = t.count <= 4 ? t.at : u32(t.at);
-      if (s + o + t.count > end) return '';
-      return decodeText(bytes.subarray(s + o, s + o + t.count));
+    function where(t) {
+      const size = TYPE_SIZE[t.type] || 0;
+      if (!size || !t.count) return -1;
+      const o = t.count * size <= 4 ? t.at : u32(t.at);
+      return s + o + size <= end ? o : -1;
     }
-    const ifd0 = ifd(u32(4));
-    const exif = ifd0[0x8769] ? ifd(u32(ifd0[0x8769].at)) : {};
+    function text(t) {
+      if (!t || (t.type !== 2 && t.type !== 7 && t.type !== 1)) return '';   // text; some tools store it as bytes
+      const o = where(t);
+      if (o < 0 || s + o + t.count > end) return '';
+      return decodeText(bytes.subarray(s + o, s + o + t.count)).replace(/\s+/g, ' ').trim();
+    }
+    function num(t) {
+      if (!t) return null;
+      const o = where(t);
+      if (o < 0) return null;
+      switch (t.type) {
+        case 1: case 7: return view.getUint8(s + o);
+        case 3: return u16(o);
+        case 4: return u32(o);
+        case 9: return view.getInt32(s + o, le);
+        case 5: { const d = u32(o + 4); return d ? u32(o) / d : null; }
+        case 10: { const d = view.getInt32(s + o + 4, le); return d ? view.getInt32(s + o, le) / d : null; }
+        default: return null;
+      }
+    }
+    const i0 = ifd(u32(4));
+    const ex = i0[0x8769] ? ifd(u32(i0[0x8769].at)) : {};
+    const info = {};
+    const make = text(i0[0x010F]), model = text(i0[0x0110]);
+    const camera = model && make && !model.toLowerCase().startsWith(make.split(' ')[0].toLowerCase())
+      ? make + ' ' + model : (model || make);
+    if (camera) info.camera = camera;
+    const put = (k, v) => { if (v !== null && v !== '' && v === v) info[k] = v; };
+    put('lens', text(ex[0xA434]));
+    put('software', text(i0[0x0131]));
+    put('artist', text(i0[0x013B]));
+    put('copyright', text(i0[0x8298]));
+    put('exposure', num(ex[0x829A]));
+    put('aperture', num(ex[0x829D]));
+    put('iso', num(ex[0x8827]));
+    put('focal', num(ex[0x920A]));
+    const res = num(i0[0x011A]), unit = num(i0[0x0128]);
+    if (res && unit === 2) info.dpi = Math.round(res);
+    else if (res && unit === 3) info.dpi = Math.round(res * 2.54);
     return {
-      taken: exifDate(text(exif[0x9003])) || exifDate(text(exif[0x9004])) || exifDate(text(ifd0[0x0132])),
-      description: text(ifd0[0x010E]),
+      taken: exifDate(text(ex[0x9003])) || exifDate(text(ex[0x9004])) || exifDate(text(i0[0x0132])),
+      description: text(i0[0x010E]),
+      info,
     };
   }
   function readExif(bytes) {
@@ -365,7 +545,8 @@ button { font: inherit; color: inherit; }
     const taken = exif.taken || localIso(new Date(file.lastModified));
     return {
       path: entry.path, taken, dateFrom: exif.taken ? 'exif' : 'file',
-      description: cleanDescription(exif.description), width, height, thumb,
+      description: cleanDescription(exif.description), width, height, bytes: file.size,
+      info: exif.info || {}, thumb,
     };
   }
 
@@ -391,7 +572,7 @@ button { font: inherit; color: inherit; }
     await Promise.all(Array.from({ length: WORKERS }, worker));
     photos.sort((a, b) => (a.taken < b.taken ? 1 : a.taken > b.taken ? -1 : a.path.localeCompare(b.path)));
     skipped.sort((a, b) => a.path.localeCompare(b.path));
-    return { version: 1, refreshed: new Date().toISOString(), photos, skipped };
+    return { version: 2, refreshed: new Date().toISOString(), photos, skipped };
   }
 
   function makeHtml(d) {
@@ -399,7 +580,8 @@ button { font: inherit; color: inherit; }
     if (i < 0) throw new Error('litebox could not find its own photo list');
     const start = i + DATA_OPEN.length;
     const end = SOURCE.indexOf(DATA_CLOSE, start);
-    const json = JSON.stringify(d).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+    const json = JSON.stringify(d).replace(/</g, '\\u003c')
+      .replace(LINE_SEPS, (c) => (c.charCodeAt(0) === 0x2028 ? '\\u2028' : '\\u2029'));
     return SOURCE.slice(0, start) + json + SOURCE.slice(end);
   }
 
@@ -432,29 +614,77 @@ button { font: inherit; color: inherit; }
     return null;
   }
 
-  // ---------- the grid ----------
+  // ---------- views: album grid, photo grid, search ----------
 
+  let album = null;          // null = the album grid (home); '*' = all photos; otherwise an album key
+  let list = [];             // the photos the grid shows now, in order; the viewer steps through these
   let observer = null;
+
+  function matches(p, terms) {
+    const hay = fold(p.description + ' ' + baseName(p.path) + ' ' + albumName(albumOf(p)));
+    return terms.every((t) => hay.includes(t));
+  }
+
   function render() {
-    const grid = $('grid');
     const n = data.photos.length;
+    const folders = hasFolders();
+    const query = fold($('search').value.trim());
+    const terms = query ? query.split(/\s+/) : [];
     if (observer) observer.disconnect();
-    grid.textContent = '';
+    $('grid').textContent = '';
+    $('albums').textContent = '';
     $('empty').hidden = n > 0;
-    $('play-all').hidden = n === 0;
-    $('meta').textContent = n
-      ? n.toLocaleString() + (n === 1 ? ' photo' : ' photos') +
-        (data.refreshed ? ' · updated ' + fmtDay(new Date(data.refreshed)) : '')
-      : '';
+    $('search').hidden = n === 0;
+    $('nothing').hidden = true;
+    $('footer').textContent = data.settings.footer;
+    $('footer').hidden = !data.settings.footer;
+    if (!n) {
+      $('grid').hidden = $('albums').hidden = $('play-all').hidden = $('back').hidden = true;
+      $('title').textContent = ''; $('meta').textContent = '';
+      list = [];
+      return;
+    }
+    const showAlbums = folders && album === null && !terms.length;
+    const scope = album === null || album === '*' || !folders ? data.photos
+      : data.photos.filter((p) => albumOf(p) === album);
+    const inAlbum = folders && album !== null && album !== '*';
+    $('search').placeholder = inAlbum ? 'Search this album' : 'Search all photos';
+    $('back').hidden = !(folders && album !== null);
+    $('title').textContent = showAlbums || !folders ? '' : album === '*' || album === null ? 'All photos' : albumName(album);
+
+    if (showAlbums) {
+      const albums = albumList();
+      list = data.photos;
+      $('albums').hidden = false;
+      $('grid').hidden = true;
+      $('meta').textContent = plural(albums.length, 'album', 'albums') + ' · ' + plural(n, 'photo', 'photos');
+      const frag = document.createDocumentFragment();
+      frag.appendChild(albumTile('*', 'All photos', data.photos));
+      for (const a of albums) frag.appendChild(albumTile(a.key, a.name, a.photos));
+      $('albums').appendChild(frag);
+      $('play-all').hidden = false;
+      return;
+    }
+
+    list = terms.length ? scope.filter((p) => matches(p, terms)) : scope;
+    $('albums').hidden = true;
+    $('grid').hidden = list.length === 0;
+    $('play-all').hidden = list.length === 0;
+    $('meta').textContent = terms.length ? plural(list.length, 'match', 'matches') : plural(list.length, 'photo', 'photos');
+    if (!list.length) {
+      $('nothing').hidden = false;
+      $('nothing').textContent = 'No photos match “' + $('search').value.trim() + '”.';
+      return;
+    }
     observer = 'IntersectionObserver' in window ? new IntersectionObserver((seen) => {
       for (const s of seen) {
         if (!s.isIntersecting) continue;
-        s.target.firstChild.src = data.photos[+s.target.dataset.i].thumb;
+        s.target.firstChild.src = list[+s.target.dataset.i].thumb;
         observer.unobserve(s.target);
       }
     }, { rootMargin: '1200px 0px' }) : null;
     const frag = document.createDocumentFragment();
-    data.photos.forEach((p, i) => {
+    list.forEach((p, i) => {
       const label = p.description || baseName(p.path);
       const tile = el('button', { className: 'tile', type: 'button', title: label });
       tile.dataset.i = i;
@@ -464,25 +694,73 @@ button { font: inherit; color: inherit; }
       tile.appendChild(img);
       frag.appendChild(tile);
     });
-    grid.appendChild(frag);
-    if (observer) for (const t of grid.children) observer.observe(t);
+    $('grid').appendChild(frag);
+    if (observer) for (const t of $('grid').children) observer.observe(t);
   }
 
+  function albumTile(key, name, photos) {
+    const b = el('button', { className: 'album', type: 'button' });
+    b.dataset.key = key;
+    const cover = el('span', { className: 'cover' });
+    cover.appendChild(el('img', { alt: '', src: photos[0].thumb, decoding: 'async' }));
+    b.appendChild(cover);
+    b.appendChild(el('span', { className: 'name' }, name));
+    b.appendChild(el('span', { className: 'n' }, plural(photos.length, 'photo', 'photos')));
+    return b;
+  }
+
+  // The address keeps the view, so the browser's Back button works: #album=Name, #all, or nothing (albums).
+  function viewHash(key) {
+    return key === null ? '' : key === '*' ? '#all' : '#album=' + encodeURIComponent(key);
+  }
+  function goTo(key) {
+    $('search').value = '';
+    if (location.hash === viewHash(key) || (key === null && !location.hash)) { album = key; render(); return; }
+    location.hash = viewHash(key);
+  }
+  function route() {
+    const h = location.hash.slice(1);
+    if (h === 'setup') { render(); openSetup(); return; }
+    let key = null;
+    if (h === 'all') key = '*';
+    else if (h.startsWith('album=')) { try { key = decodeURIComponent(h.slice(6)); } catch (e) { key = null; } }
+    if (key !== null && key !== '*' && !data.photos.some((p) => albumOf(p) === key)) key = null;
+    if (key !== album) $('search').value = '';
+    album = key;
+    if (!$('viewer').hidden) closeViewer();
+    render();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', route);
+
+  $('albums').addEventListener('click', (e) => {
+    const t = e.target.closest('.album');
+    if (t) goTo(t.dataset.key);
+  });
   $('grid').addEventListener('click', (e) => {
     const t = e.target.closest('.tile');
     if (t) openViewer(+t.dataset.i);
   });
+  $('home').addEventListener('click', () => goTo(null));
+  $('back').addEventListener('click', () => goTo(null));
+  $('search').addEventListener('input', render);
+  $('search').addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('search').value) { $('search').value = ''; render(); e.stopPropagation(); }
+  });
 
-  // ---------- the viewer and slideshow ----------
+  // ---------- the viewer, info panel and slideshow ----------
 
   let cur = -1, playing = false, slideTimer = 0, idleTimer = 0, swiped = false;
   const viewer = $('viewer'), vImg = $('v-img');
+  let infoOn = false;
+  try { infoOn = localStorage.getItem('litebox.info') === '1'; } catch (e) { infoOn = false; }
 
   function openViewer(i) {
-    if (!data.photos.length) return;
-    cur = Math.max(0, Math.min(i, data.photos.length - 1));
+    if (!list.length) return;
+    cur = Math.max(0, Math.min(i, list.length - 1));
     viewer.hidden = false;
     document.body.style.overflow = 'hidden';
+    setInfo(infoOn);
     show();
     viewer.focus();
   }
@@ -491,25 +769,59 @@ button { font: inherit; color: inherit; }
     viewer.hidden = true;
     document.body.style.overflow = '';
     vImg.removeAttribute('src');
-    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    const fs = document.fullscreenElement || document.webkitFullscreenElement;
+    if (fs) { const r = (document.exitFullscreen || document.webkitExitFullscreen).call(document); if (r && r.catch) r.catch(() => {}); }
     const tile = $('grid').children[cur];
     if (tile) tile.focus();
     cur = -1;
   }
   function show() {
-    const p = data.photos[cur];
+    const p = list[cur];
     $('v-missing').hidden = true;
     vImg.hidden = false;
     vImg.alt = p.description || baseName(p.path);
     vImg.src = photoUrl(p.path);
     $('v-desc').textContent = p.description || '';
-    $('v-when').textContent = fmtWhen(p);
+    $('v-when').textContent = data.settings.showDates ? fmtWhen(p) : '';
     $('v-file').textContent = p.path.replace(/^[^/]*\//, '');
-    $('v-count').textContent = (cur + 1).toLocaleString() + ' / ' + data.photos.length.toLocaleString();
+    $('v-count').textContent = (cur + 1).toLocaleString() + ' / ' + list.length.toLocaleString();
+    fillInfo(p);
     for (const d of [1, -1]) {                       // warm up the neighbours
-      const q = data.photos[(cur + d + data.photos.length) % data.photos.length];
+      const q = list[(cur + d + list.length) % list.length];
       new Image().src = photoUrl(q.path);
     }
+  }
+  function fillInfo(p) {
+    const dl = $('v-info-list');
+    dl.textContent = '';
+    const i = p.info || {};
+    const rows = [];
+    const add = (k, v) => { if (v !== undefined && v !== null && v !== '') rows.push([k, String(v)]); };
+    add('File', baseName(p.path));
+    if (hasFolders()) add('Album', albumName(albumOf(p)));
+    if (data.settings.showDates) add(p.dateFrom === 'file' ? 'File date' : 'Taken', fmtWhen(p).replace(' · file date', ''));
+    add('Size', p.width && p.height ? p.width.toLocaleString() + ' × ' + p.height.toLocaleString() + ' pixels' : '');
+    add('File size', p.bytes ? fmtSize(p.bytes) : '');
+    add('Camera', i.camera);
+    add('Lens', i.lens);
+    add('Exposure', i.exposure ? (i.exposure < 1 ? '1/' + Math.round(1 / i.exposure) : +i.exposure.toFixed(1)) + ' s' : '');
+    add('Aperture', i.aperture ? 'f/' + +i.aperture.toFixed(1) : '');
+    add('ISO', i.iso);
+    add('Focal length', i.focal ? +i.focal.toFixed(1) + ' mm' : '');
+    add('Resolution', i.dpi ? i.dpi + ' dpi' : '');
+    add('Software', i.software);
+    add('Artist', i.artist);
+    add('Copyright', i.copyright);
+    add('Description', p.description);
+    for (const [k, v] of rows) { dl.appendChild(el('dt', null, k)); dl.appendChild(el('dd', null, v)); }
+  }
+  function setInfo(on) {
+    infoOn = on;
+    $('v-info').hidden = !on;
+    viewer.classList.toggle('with-info', on);
+    $('v-info-btn').classList.toggle('on', on);
+    $('v-info-btn').setAttribute('aria-pressed', on ? 'true' : 'false');
+    try { localStorage.setItem('litebox.info', on ? '1' : '0'); } catch (e) { /* no storage */ }
   }
   vImg.addEventListener('error', () => {
     if (viewer.hidden || !vImg.getAttribute('src')) return;
@@ -517,7 +829,7 @@ button { font: inherit; color: inherit; }
     $('v-missing').hidden = false;
   });
   function go(d) {
-    const n = data.photos.length;
+    const n = list.length;
     cur = (cur + d + n) % n;
     show();
     schedule();
@@ -526,11 +838,17 @@ button { font: inherit; color: inherit; }
     clearTimeout(slideTimer);
     if (playing) slideTimer = setTimeout(() => go(1), lb.slideMs);
   }
+  function setSpeed(seconds) {
+    $('v-speed-range').value = seconds;
+    $('v-speed-out').textContent = seconds + ' s';
+  }
   function startShow() {
     playing = true;
     $('v-play').classList.add('on');
     $('v-play').innerHTML = '&#10074;&#10074;';
     $('v-play').setAttribute('aria-label', 'Pause slideshow');
+    setSpeed(Math.round(lb.slideMs / 1000));
+    $('v-speed').hidden = false;
     schedule();
     wake();
   }
@@ -539,6 +857,7 @@ button { font: inherit; color: inherit; }
     clearTimeout(slideTimer);
     clearTimeout(idleTimer);
     viewer.classList.remove('idle');
+    $('v-speed').hidden = true;
     $('v-play').classList.remove('on');
     $('v-play').innerHTML = '&#9654;';
     $('v-play').setAttribute('aria-label', 'Start slideshow');
@@ -558,11 +877,21 @@ button { font: inherit; color: inherit; }
     else { const r = viewer[fullApi](); if (r && r.catch) r.catch(() => {}); }
   }
 
+  $('v-speed-range').addEventListener('input', () => {
+    const s = +$('v-speed-range').value;
+    lb.slideMs = s * 1000;
+    setSpeed(s);
+    remember('slideSeconds', s);
+    schedule();
+  });
+  $('v-speed').addEventListener('pointerdown', (e) => e.stopPropagation());
+  $('v-speed').addEventListener('pointerup', (e) => e.stopPropagation());
   $('v-prev').addEventListener('click', () => go(-1));
   $('v-next').addEventListener('click', () => go(1));
   $('v-close').addEventListener('click', closeViewer);
   $('v-play').addEventListener('click', () => (playing ? stopShow() : startShow()));
   $('v-full').addEventListener('click', toggleFull);
+  $('v-info-btn').addEventListener('click', () => setInfo(!infoOn));
   $('play-all').addEventListener('click', () => { openViewer(0); startShow(); });
   viewer.addEventListener('pointermove', wake);
   $('v-stage').addEventListener('click', (e) => {
@@ -570,8 +899,8 @@ button { font: inherit; color: inherit; }
     if (e.target === e.currentTarget) closeViewer();   // a click on the black around the photo
   });
   let downX = 0, downY = 0;
-  viewer.addEventListener('pointerdown', (e) => { downX = e.clientX; downY = e.clientY; swiped = false; });
-  viewer.addEventListener('pointerup', (e) => {
+  $('v-stage').addEventListener('pointerdown', (e) => { downX = e.clientX; downY = e.clientY; swiped = false; });
+  $('v-stage').addEventListener('pointerup', (e) => {
     const dx = e.clientX - downX, dy = e.clientY - downY;
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) { swiped = true; go(dx < 0 ? 1 : -1); }
   });
@@ -580,20 +909,74 @@ button { font: inherit; color: inherit; }
       if (e.key === 'Escape' && !working) closePanel();
       return;
     }
+    if (!$('setup').hidden) {
+      if (e.key === 'Escape') closeSetup();
+      return;
+    }
     if (viewer.hidden || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.target && e.target.type === 'range' && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) return;
     if (e.key === 'ArrowRight') go(1);
     else if (e.key === 'ArrowLeft') go(-1);
     else if (e.key === 'Escape') closeViewer();
     else if (e.key === ' ' || e.key === 'Spacebar') (playing ? stopShow() : startShow());
     else if (e.key === 'f' || e.key === 'F') toggleFull();
+    else if (e.key === 'i' || e.key === 'I') setInfo(!infoOn);
     else return;
     e.preventDefault();
     wake();
   });
 
-  // ---------- refresh ----------
+  // ---------- setup (reached by #setup) ----------
 
-  let working = false, cancelled = false, preferInput = false;
+  let saved = JSON.stringify(data.settings);
+  const dirty = () => JSON.stringify(data.settings) !== saved;
+
+  function openSetup() {
+    if (!viewer.hidden) closeViewer();
+    const s = data.settings;
+    $('s-footer').value = s.footer;
+    $('s-dates').checked = !!s.showDates;
+    $('s-seconds').value = s.slideSeconds;
+    $('s-photos').textContent = data.photos.length
+      ? plural(data.photos.length, 'photo', 'photos') + (hasFolders() ? ' in ' + plural(albumList().length, 'album', 'albums') : '') +
+        (data.refreshed ? ' · last refreshed ' + fmtDay(new Date(data.refreshed)) : '')
+      : 'No photos yet.';
+    showDirty();
+    $('setup').hidden = false;
+    $('s-refresh').focus();
+  }
+  function closeSetup() {
+    if (dirty() && !window.confirm('Your settings are not saved into ' + PAGE_NAME + ' yet. Close anyway?')) return;
+    $('setup').hidden = true;
+    if (location.hash === '#setup') history.replaceState(null, '', location.pathname + location.search + viewHash(album));
+  }
+  function showDirty() {
+    $('s-dirty').textContent = dirty()
+      ? 'Not saved yet: these changes show now, but are kept only once saved into ' + PAGE_NAME + '.'
+      : 'Changes here show straight away, but are kept only once saved into ' + PAGE_NAME + '.';
+    $('s-dirty').classList.toggle('err', dirty());
+  }
+  function readSetup() {
+    const secs = Math.round(+$('s-seconds').value);
+    data.settings = {
+      footer: $('s-footer').value.trim(),
+      showDates: $('s-dates').checked,
+      slideSeconds: secs >= 2 && secs <= 20 ? secs : data.settings.slideSeconds,
+    };
+    lb.slideMs = data.settings.slideSeconds * 1000;
+    render();
+    showDirty();
+  }
+  for (const id of ['s-footer', 's-dates', 's-seconds']) $(id).addEventListener('input', readSetup);
+  $('s-dates').addEventListener('change', readSetup);
+  $('s-close').addEventListener('click', closeSetup);
+  $('s-refresh').addEventListener('click', chooseFolder);
+  $('s-save').addEventListener('click', saveSettings);
+  $('setup-start').addEventListener('click', () => { location.hash = '#setup'; });
+
+  // ---------- saving and refresh ----------
+
+  let working = false, cancelled = false, preferInput = false, fileHandle = null;
 
   function panel(title, body, actions, opts) {
     opts = opts || {};
@@ -618,7 +1001,7 @@ button { font: inherit; color: inherit; }
     const first = a.querySelector('.primary') || a.firstChild;
     if (first) first.focus();
   }
-  function closePanel() { $('panel').hidden = true; $('refresh').focus(); }
+  function closePanel() { $('panel').hidden = true; if (!$('setup').hidden) $('s-refresh').focus(); }
   function progress(done, total) {
     $('p-bar').style.width = (total ? (100 * done / total) : 100) + '%';
     $('p-count').textContent = 'Read ' + done.toLocaleString() + ' of ' + total.toLocaleString() + ' photos';
@@ -628,20 +1011,58 @@ button { font: inherit; color: inherit; }
     box.textContent = '';
     if (!skipped.length) return;
     const det = el('details');
-    det.appendChild(el('summary', null, skipped.length.toLocaleString() +
-      (skipped.length === 1 ? ' file' : ' files') + " litebox can't show"));
+    det.appendChild(el('summary', null, plural(skipped.length, 'file', 'files') + " litebox can't show"));
     const ul = el('ul');
     for (const s of skipped) ul.appendChild(el('li', null, s.path.replace(/^[^/]*\//, '') + ' (' + s.why + ')'));
     det.appendChild(ul);
     box.appendChild(det);
   }
 
-  function startRefresh() {
-    panel('Refresh litebox', [
-      'Choose the folder that holds ' + PAGE_NAME + ' and your photos folder. litebox reads every photo, makes ' +
-      'small previews, and saves an updated ' + PAGE_NAME + '.',
-      'Your photos are only read, never changed. Your browser may ask for permission first.',
-    ], [['Cancel', closePanel], ['Choose folder', chooseFolder, true]]);
+  async function writeTo(handle, html) {
+    const w = await handle.createWritable();
+    await w.write(html);
+    await w.close();
+  }
+
+  // Saves html into this litebox file where the browser allows it; otherwise offers a download.
+  async function saveHtml(html, what) {
+    if (fileHandle) {
+      try { await writeTo(fileHandle, html); return finishSaved(html, what); } catch (e) { fileHandle = null; }
+    }
+    if (window.showDirectoryPicker && !preferInput) {
+      let dir = null;
+      try { dir = await window.showDirectoryPicker({ id: 'litebox', mode: 'readwrite' }); }
+      catch (e) { if (e && e.name === 'AbortError') { closePanel(); return; } preferInput = true; }
+      if (dir) {
+        const h = await childNamed(dir, PAGE_NAME, 'file').catch(() => null);
+        if (h) {
+          try { await writeTo(h, html); fileHandle = h; return finishSaved(html, what); } catch (e) { /* download */ }
+        }
+      }
+    }
+    offerDownload(html, what);
+  }
+  function finishSaved(html, what) {
+    saved = JSON.stringify(data.settings);
+    showDirty();
+    panel('Saved', [what + ' Saved into ' + PAGE_NAME + ' (' + fmtSize(new Blob([html]).size) + ').'],
+      [['Done', closePanel, true]]);
+  }
+  function offerDownload(html, what) {
+    panel('One more step', [
+      what + ' Your browser saves the updated ' + PAGE_NAME + ' (' + fmtSize(new Blob([html]).size) + ') to your ' +
+      'downloads. Copy it onto the drive next to the photos folder, replacing the old one.',
+    ], [['Close', closePanel], ['Download ' + PAGE_NAME, () => {
+      download(html);
+      saved = JSON.stringify(data.settings);
+      showDirty();
+      showNotice('Remember to copy the downloaded ' + PAGE_NAME + ' onto the drive, replacing the old one.');
+    }, true]]);
+  }
+
+  function saveSettings() {
+    panel('Saving…', ['Choose the folder that holds ' + PAGE_NAME + ' if your browser asks.'], []);
+    saveHtml(makeHtml(data), 'Settings saved.');
   }
 
   async function chooseFolder() {
@@ -651,10 +1072,10 @@ button { font: inherit; color: inherit; }
     catch (e) {
       if (e && e.name === 'AbortError') return;
       preferInput = true;
-      panel('Refresh litebox', [
+      panel('Refresh photos', [
         "Your browser wouldn't open that folder for saving. Choose it again and litebox will download the new " +
         PAGE_NAME + ' for you to copy onto the drive instead.',
-      ], [['Cancel', closePanel], ['Choose folder', chooseFolder, true]]);
+      ], [['Cancel', closePanel], ['Choose folder', () => { closePanel(); chooseFolder(); }, true]]);
       return;
     }
     let entries = null, target = null;
@@ -668,7 +1089,8 @@ button { font: inherit; color: inherit; }
       }
     } catch (e) { entries = null; }
     if (!entries) return noPhotosFolder(dir.name);
-    run(entries, target);
+    if (target) fileHandle = target;
+    run(entries);
   }
 
   $('picker').addEventListener('change', () => {
@@ -679,17 +1101,17 @@ button { font: inherit; color: inherit; }
       rel: f.webkitRelativePath || f.name, getFile: async () => f,
     })));
     if (!entries) return noPhotosFolder((files[0].webkitRelativePath || '').split('/')[0]);
-    run(entries, null);
+    run(entries);
   });
 
   function noPhotosFolder(name) {
-    const p = el('p', { className: 'err' }, 'There is no photos folder in “' + (name || 'that folder') + '”.');
-    panel('Refresh litebox', [p,
+    panel('Refresh photos', [
+      el('p', { className: 'err' }, 'There is no photos folder in “' + (name || 'that folder') + '”.'),
       'Choose the folder that holds ' + PAGE_NAME + ' and a folder called photos.',
-    ], [['Cancel', closePanel], ['Choose folder', chooseFolder, true]]);
+    ], [['Cancel', closePanel], ['Choose folder', () => { closePanel(); chooseFolder(); }, true]]);
   }
 
-  async function run(entries, target) {
+  async function run(entries) {
     working = true; cancelled = false;
     panel('Reading your photos…', ['This can take a few minutes for a big collection. Keep this tab open.'],
       [['Cancel', () => { cancelled = true; }]], { progress: true });
@@ -702,32 +1124,15 @@ button { font: inherit; color: inherit; }
         [['Close', closePanel, true]]);
       return;
     }
-    const html = makeHtml(next);
-    const size = new Blob([html]).size;
-    const found = next.photos.length.toLocaleString() + (next.photos.length === 1 ? ' photo' : ' photos');
-    let saved = false;
-    if (target) {
-      try {
-        const w = await target.createWritable();
-        await w.write(html);
-        await w.close();
-        saved = true;
-      } catch (e) { saved = false; }
-    }
+    next.settings = data.settings;
     data = next;
+    if (album !== null && album !== '*' && !data.photos.some((p) => albumOf(p) === album)) album = null;
     render();
-    if (saved) {
-      panel('litebox is up to date', ['Found ' + found + '. Saved ' + PAGE_NAME + ' (' + fmtSize(size) + ').'],
-        [['Done', closePanel, true]]);
-    } else {
-      panel('One more step', [
-        'Found ' + found + '. Your browser saves the updated ' + PAGE_NAME + ' (' + fmtSize(size) + ') to your ' +
-        'downloads. Copy it onto the drive next to the photos folder, replacing the old one.',
-      ], [['Close', closePanel], ['Download ' + PAGE_NAME, () => download(html), true]]);
-      showNotice('These photos show now, but the drive still has the old ' + PAGE_NAME +
-        '. Download the new one and copy it onto the drive to keep them.');
-    }
-    skippedList(next.skipped);
+    openSetup();
+    const found = 'Found ' + plural(data.photos.length, 'photo', 'photos') + '.';
+    if (fileHandle) await saveHtml(makeHtml(data), found);
+    else offerDownload(makeHtml(data), found);
+    skippedList(data.skipped);
   }
 
   function download(html) {
@@ -739,19 +1144,20 @@ button { font: inherit; color: inherit; }
   }
   function showNotice(text) { $('notice').textContent = text; $('notice').hidden = false; }
 
-  $('refresh').addEventListener('click', startRefresh);
-
   Object.assign(lb, {
     readExif, cleanDescription, buildIndex, makeHtml, entriesFromPicked, render,
     open: openViewer, close: closeViewer, next: () => go(1), prev: () => go(-1), play: startShow, stop: stopShow,
+    load(d) { data = normalise(d); album = null; render(); },
   });
   Object.defineProperties(lb, {
     data: { get: () => data },
+    list: { get: () => list },
     index: { get: () => cur },
     playing: { get: () => playing },
+    album: { get: () => album },
   });
 
-  render();
+  route();
 })();
 </script>
 </body>

@@ -52,6 +52,8 @@ The rulings on the open questions, word for word:
   album grid. veto: descriptions only.
 - **No subfolders at all:** the album grid is skipped and the photos show straight away. veto: always show the
   album grid, even with only "Unsorted".
+- **An "All photos" tile comes first in the album grid.** Added during the build. veto: drop it.
+- **The speed slider shows only while the slideshow plays.** Added during the build. veto: always show it.
 - **Albums are sorted by name** (numbers in order: "2" before "10"), "Unsorted" last; each album's cover is its
   newest photo. veto: another order or cover.
 - **"Hide dates" hides both the date taken and the file date.** veto: hide only the date taken.

@@ -35,10 +35,14 @@
   try {
     ok('empty litebox shows the "No photos yet" message', !document.getElementById('empty').hidden);
     ok('empty litebox hides the slideshow button', document.getElementById('play-all').hidden);
+    ok('empty litebox offers "Set up litebox"', !document.getElementById('setup-start').hidden &&
+      document.getElementById('setup-start').offsetParent !== null);
+    ok('no Refresh or Settings button outside setup', !Array.from(document.querySelectorAll('header button, footer button'))
+      .some((b) => /refresh|setting/i.test(b.textContent)));
 
     const files = window.MANIFEST.files;
     const expectEntries = [
-      'photos/2021 lake/a.jpg', 'photos/IMG_0002.HEIC', 'photos/b-rotated.jpg', 'photos/broken.jpg',
+      'photos/2021 lake/a.jpg', 'photos/10 scans/scan-001.jpg', 'photos/2 misc/deep/m.jpg', 'photos/IMG_0002.HEIC', 'photos/b-rotated.jpg', 'photos/broken.jpg',
       'photos/c.png', 'photos/clip.mp4', 'photos/d.webp', 'photos/e.jpg', 'photos/h #1 & more.jpg',
     ].sort();
 
@@ -54,12 +58,12 @@
 
     let lastProgress = null;
     const d = await lb.buildIndex(picked, (done, total) => { lastProgress = [done, total]; });
-    ok('progress reaches the end', same(lastProgress, [6 + 1, 6 + 1]), lastProgress);   // 6 photos + broken.jpg
+    ok('progress reaches the end', same(lastProgress, [8 + 1, 8 + 1]), lastProgress);   // 8 photos + broken.jpg
 
     const order = d.photos.map((p) => p.path);
-    ok('six photos, newest first', same(order, [
-      'photos/h #1 & more.jpg', 'photos/b-rotated.jpg', 'photos/c.png', 'photos/2021 lake/a.jpg',
-      'photos/d.webp', 'photos/e.jpg']), order);
+    ok('eight photos, newest first', same(order, [
+      'photos/2 misc/deep/m.jpg', 'photos/h #1 & more.jpg', 'photos/b-rotated.jpg', 'photos/c.png', 'photos/2021 lake/a.jpg',
+      'photos/d.webp', 'photos/e.jpg', 'photos/10 scans/scan-001.jpg']), order);
     ok('skipped files are reported with reasons', same(d.skipped, [
       { path: 'photos/broken.jpg', why: 'could not be read' },
       { path: 'photos/clip.mp4', why: 'not a format browsers can show' },
@@ -78,6 +82,19 @@
     ok('camera placeholder description hidden', e && e.description === '', e && e.description);
     ok('no description gives an empty one', h && h.description === '', h && h.description);
 
+    const s = by['scan-001.jpg'], m = by['m.jpg'];
+    ok('scan: scanner, resolution, software, artist, copyright read',
+      s && same(s.info, { camera: 'EPSON Perfection V600', software: 'Epson Scan 2', artist: 'Chris W',
+        copyright: '© Family archive', dpi: 600 }), s && s.info);
+    ok('scan: no date taken, so the file date is used', s && s.dateFrom === 'file' && s.taken === '2018-01-01T12:00:00',
+      s && [s.taken, s.dateFrom]);
+    ok('phone photo: camera, lens, exposure, aperture, ISO, focal length read',
+      m && m.info.camera === 'Apple iPhone 15' && m.info.lens === 'iPhone 15 back camera' &&
+      Math.abs(m.info.exposure - 0.004) < 1e-9 && m.info.aperture === 1.8 && m.info.iso === 64 &&
+      Math.abs(m.info.focal - 6.86) < 1e-9, m && m.info);
+    ok('file size recorded', d.photos.every((p) => p.bytes > 0));
+    ok('a photo with no EXIF has empty details', c && same(c.info, {}), c && c.info);
+
     const thumbs = await Promise.all(d.photos.map((p) => pixel(p.thumb, 0, 0)));
     ok('every thumbnail is a 240px square JPEG', d.photos.every((p) => p.thumb.startsWith('data:image/jpeg;base64,')) &&
       thumbs.every((t) => t && t.w === 240 && t.h === 240), thumbs.map((t) => t && [t.w, t.h]));
@@ -90,11 +107,13 @@
 
     // A tricky description must not break out of the page's data block.
     const tricky = JSON.parse(JSON.stringify(d));
-    tricky.photos[0].description = '</script><b>x</b>\u2028';
+    tricky.photos[0].description = '</script><b>x</b>' + String.fromCharCode(0x2028);
+    tricky.settings = { footer: '</script> footer', showDates: false, slideSeconds: 9 };
     const html = lb.makeHtml(d);
     const parsed = new DOMParser().parseFromString(lb.makeHtml(tricky), 'text/html');
     const back = JSON.parse(parsed.getElementById('litebox-data').textContent);
     ok('saved list survives a description containing </script>', back.photos[0].description === tricky.photos[0].description);
+    ok('saved settings survive too', same(back.settings, tricky.settings), back.settings);
     const again = JSON.parse(new DOMParser().parseFromString(html, 'text/html').getElementById('litebox-data').textContent);
     ok('saved file holds the new photo list', same(again.photos.map((p) => p.path), order));
     ok('saved file starts with a doctype', html.startsWith('<!doctype html>'));
