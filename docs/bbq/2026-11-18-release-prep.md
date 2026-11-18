@@ -36,7 +36,8 @@ The request, word for word:
 - **No `NOTICE` file:** Apache-2.0 needs one only to pass on notices; litebox bundles no one else's code.
   veto: add one.
 - **Badges and links point at `github.com/cwlls/litebox`**, the signed-in GitHub account; that repository did not
-  exist yet on 2026-11-18. veto: another owner or name.
+  exist yet on 2026-11-18. veto: another owner or name. **Withdrawn 2026-11-18:** Chris named the remote: "the
+  remote will be: github.com/tholent/litebox". The README now points there.
 - **Lint:** ruff's default rules for Python; ESLint's recommended rules for JavaScript, including the script inside
   `litebox.html` through eslint-plugin-html, with unused `catch` names allowed; the license header check. veto:
   more or fewer rules, or ruff's formatter.
@@ -54,3 +55,14 @@ The request, word for word:
   session's permission check. Run them locally, or let the first GitHub run show the results.
 - Neither workflow has run: nothing has been pushed (push only with Chris's approval).
 - Screenshots with real photos for the README, if Chris has some he is happy to publish.
+
+## Remote
+
+- 2026-11-18: Chris asked, word for word: "let's generate a deploy key and get this setup with the remote", then
+  "the remote will be: github.com/tholent/litebox".
+  - `tholent/litebox` already existed, empty and **public**. Chris has admin rights on it, but the signed-in token
+    cannot manage deploy keys (HTTP 403), so Chris adds the key on GitHub's website.
+  - Defaulted: **an ed25519 deploy key with no passphrase** at `~/.ssh/litebox_deploy`, with a `github-litebox`
+    host entry in `~/.ssh/config`, the same pattern as the existing `quadrule_deploy` key. `origin` is
+    `git@github-litebox:tholent/litebox.git`. veto: a passphrase, or HTTPS.
+  - Not pushed: pushing waits for Chris's word, and the first push makes everything public.
