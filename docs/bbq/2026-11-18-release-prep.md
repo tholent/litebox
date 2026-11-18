@@ -88,3 +88,7 @@ The request, word for word:
   work, so a harness could be cut off (once after 1.8 real seconds, with 600 simulated ones spent). Reproduced here
   by loading all four cores. `tests/run.py` now runs each test page on a real clock and asks the page over
   Chrome's DevTools pipe whether its harness has finished: 10 runs out of 10 passed under load.
+- Lint then failed once more on a misplaced `noqa` marker, fixed in `5a3e74a`. On Chris's word ("Push, then tag
+  5a3e74a"), and after Lint and Tests both passed on it: **tag `v0.1.0` on `5a3e74a`, and the release "litebox
+  0.1.0"** at https://github.com/tholent/litebox/releases/tag/v0.1.0, with the CHANGELOG's notes and `litebox.html`
+  attached (60,037 bytes; the downloaded copy matches the repository's file).

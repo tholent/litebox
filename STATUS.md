@@ -13,11 +13,13 @@ The project's live state. Update it when work lands. Every claim cites at least 
 - Logo in the header bar and as the tab icon, embedded in the page; a Header text setting in setup (`assets/logo.png`, `docs/bbq/2026-11-18-second-round.md`).
 - Setup reworked: "Load photos" / "Update photos" only reads them and shows a green check with the time; litebox.html is saved or downloaded only by its own button, and closing setup or the tab with anything unsaved warns first (`litebox.html`, `docs/bbq/2026-11-18-second-round.md`).
 - Release prep: Apache-2.0 `LICENSE`, license headers, a user-facing README, and GitHub workflows for lint and tests with shared setup and caching (`README.md`, `.github/workflows/lint.yml`, `.github/workflows/test.yml`, `docs/bbq/2026-11-18-release-prep.md`).
+- **v0.1.0 released** on 2026-11-18: tag `v0.1.0` on `5a3e74a`, with `litebox.html` attached (`CHANGELOG.md`).
 - Pushed to github.com/tholent/litebox on 2026-11-18; Lint (ruff, ESLint, license headers) and Tests pass there, with the pip and npm caches in use (`.github/workflows/lint.yml`, `.github/workflows/test.yml`).
-- Automated tests pass in headless Chromium: 144 checks, run with `python3 tests/run.py` (`tests/run.py`).
+- Automated tests pass in headless Chromium, on a real clock: 144 checks, run with `python3 tests/run.py` (`tests/run.py`).
 
 ## Next
 
+- Try v0.1.0 on a real USB stick on Windows and macOS (Chrome and Safari), the one check the blind review asked for that no test covers (`docs/bbq/2026-11-18-release-prep.md`).
 - Chris to try the second round on the 231 real images: open `litebox.html#setup`, Load photos, set the header text, footer and dates, Download, then view it as a recipient would (`litebox.html`).
 
 ## Known debt
@@ -28,7 +30,7 @@ The project's live state. Update it when work lands. Every claim cites at least 
 
 ## Log
 
-- 2026-11-18: prepared with project-prep; ADR-001 drafted with makeadr and ratified by Chris; first working gallery planned with bbq and built; second round (albums, search, hidden setup, details panel) built; logo and header text added; header-text save bug fixed; setup reworked so only its save button saves.
+- 2026-11-18: prepared with project-prep; ADR-001 drafted with makeadr and ratified by Chris; first working gallery planned with bbq and built; second round (albums, search, hidden setup, details panel) built; logo and header text added; header-text save bug fixed; setup reworked so only its save button saves. Release prep (license, headers, README, CI), pushed to GitHub, v0.1.0 released.
 
 ## How this file is kept
 
