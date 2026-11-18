@@ -1,0 +1,3 @@
+# Tools for the tests and lint checks. litebox.html itself needs none of these.
+pillow==13.0.0
+ruff==0.17.5

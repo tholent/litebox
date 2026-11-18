@@ -1,4 +1,17 @@
 #!/usr/bin/env python3
+# Copyright 2026 Chris Wells
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """Test litebox.html end to end in headless Chromium.
 
 Usage: python3 tests/run.py [--screenshots] [--keep]
@@ -39,7 +52,10 @@ TESTS = ROOT / "tests"
 OUT = TESTS / "out"
 DRIVE = OUT / "drive"
 PHOTOS = DRIVE / "photos"
-CHROMIUM = shutil.which("chromium") or shutil.which("chromium-browser") or shutil.which("google-chrome")
+CHROMIUM = (shutil.which("chromium") or shutil.which("chromium-browser") or shutil.which("google-chrome")
+            or shutil.which("google-chrome-stable"))
+# Extra Chrome flags, e.g. LITEBOX_CHROME_ARGS="--no-sandbox" on a CI machine.
+CHROME_EXTRA = os.environ.get("LITEBOX_CHROME_ARGS", "").split()
 
 
 def exif_bytes(taken=None, description=None, orientation=None, ifd0=None, exif=None):
@@ -138,7 +154,7 @@ def inject(page_html: str, harness: str) -> str:
 
 def chromium(args):
     cmd = [CHROMIUM, "--headless", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
-           "--allow-file-access-from-files", "--hide-scrollbars"] + args
+           "--allow-file-access-from-files", "--hide-scrollbars"] + CHROME_EXTRA + args
     return subprocess.run(cmd, capture_output=True, text=True, timeout=180)
 
 
@@ -183,6 +199,9 @@ def main():
 
     results.append({"name": "photos unchanged by litebox", "ok": photo_hashes() == before, "info": None})
     src = (ROOT / "litebox.html").read_text(encoding="utf-8")
+    results.append({"name": "litebox.html carries its license header",
+                    "ok": "Licensed under the Apache License, Version 2.0" in src, "info": None})
+    src = re.sub(r"<!--.*?-->", "", src, flags=re.S)  # comments load nothing (the license header names a web page)
     results.append({"name": "litebox.html names no internet address",
                     "ok": not re.search(r"(https?:)?//[a-z0-9.-]+\.[a-z]{2,}", src, re.I), "info": None})
     results.append({"name": "litebox.html links no outside files",

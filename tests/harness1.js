@@ -1,3 +1,17 @@
+// Copyright 2026 Chris Wells
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 // Run 1: refresh an empty litebox from the test drive's files and check the photo list it builds.
 // Injected after litebox's own script by tests/run.py; reports into <pre id="lb-results">.
 (async function () {
@@ -117,6 +131,7 @@
     const again = JSON.parse(new DOMParser().parseFromString(html, 'text/html').getElementById('litebox-data').textContent);
     ok('saved file holds the new photo list', same(again.photos.map((p) => p.path), order));
     ok('saved file starts with a doctype', html.startsWith('<!doctype html>'));
+    ok('saved file keeps the license header', html.includes('Licensed under the Apache License, Version 2.0'));
 
     // --- setup: Load photos only reads them; litebox.html is saved only by the save button
     const $ = (id) => document.getElementById(id);

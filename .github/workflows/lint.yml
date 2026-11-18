@@ -1,0 +1,30 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          node: "true"
+      - name: Python (ruff)
+        run: ruff check --output-format=github .
+      - name: JavaScript, including the script inside litebox.html (ESLint)
+        run: npx eslint .
+      - name: License headers
+        run: python tests/check-headers.py
