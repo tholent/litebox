@@ -12,4 +12,5 @@ name: Chris
 status_ceiling: 300
 branch: main
 land: commit
+checklist: docs/releasing.md
 ```

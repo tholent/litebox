@@ -92,3 +92,8 @@ The request, word for word:
   5a3e74a"), and after Lint and Tests both passed on it: **tag `v0.1.0` on `5a3e74a`, and the release "litebox
   0.1.0"** at https://github.com/tholent/litebox/releases/tag/v0.1.0, with the CHANGELOG's notes and `litebox.html`
   attached (60,037 bytes; the downloaded copy matches the repository's file).
+- Chris turned on release immutability for `tholent/litebox` and asked whether the release steps need changing;
+  then, to the offer of a written checklist: "yes, please". `docs/releasing.md` is that checklist, and
+  `pitmaster.md` names it (`checklist:`) for setfree. Defaulted: **every release is made as a draft, checked, then
+  published**, since a published release can no longer be fixed. veto: publish straight away, as v0.1.0 was.
+  v0.1.0 itself was published before the setting and is not immutable (`isImmutable: false`).

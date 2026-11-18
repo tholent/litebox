@@ -12,6 +12,7 @@ None yet. The owner sets one; agents do not invent it.
 - `STATUS.md` — where we are right now. Short. Update it at the end of each session.
 - `docs/decisions/` — decision records (ADRs), in ADR+ format; its `README.md` names the format and owner.
 - `docs/bbq/` — question-session (bbq) records: the rules a piece of work was planned under.
+- `docs/releasing.md` — how to make a release. Releases are immutable once published.
 - `pitmaster.md` — settings for the pitmaster skills (commit on `main`, no pull requests).
 
 ## Ground rules
