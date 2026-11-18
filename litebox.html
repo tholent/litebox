@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>litebox</title>
+<style>
+:root {
+  --bg: #0c0c0d;
+  --raise: #161618;
+  --raise-2: #1f1f22;
+  --line: #2a2a2e;
+  --text: #ece9e4;
+  --muted: #8f8b85;
+  --faint: #66625d;
+  --accent: #e9b44c;
+  --on-accent: #1a1408;
+  --danger: #e8766b;
+  --tile: 168px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+
+.bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; background: rgba(12, 12, 13, .9); border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.brand { font-weight: 650; letter-spacing: .03em; }
+.meta { flex: 1; min-width: 0; color: var(--muted); font-size: 13px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btn { background: var(--raise-2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 6px 12px; cursor: pointer; white-space: nowrap; }
+.btn:hover { border-color: #3d3d43; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn:focus-visible, .tile:focus-visible, .vbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.notice { margin: 12px 16px 0; padding: 10px 14px; border: 1px solid var(--accent); border-radius: 8px;
+  background: rgba(233, 180, 76, .08); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--tile), 1fr)); gap: 3px; padding: 3px; }
+.tile { display: block; padding: 0; border: 0; border-radius: 0; background: var(--raise);
+  aspect-ratio: 1 / 1; cursor: zoom-in; overflow: hidden; }
+.tile img { display: block; width: 100%; height: 100%; object-fit: cover; transition: opacity .15s; }
+.tile:hover img { opacity: .82; }
+@media (max-width: 560px) { :root { --tile: 104px; } .bar { padding: 8px 12px; } }
+
+.empty { max-width: 36rem; margin: 10vh auto; padding: 0 16px; text-align: center; color: var(--muted); }
+.empty h1 { color: var(--text); font-size: 22px; font-weight: 600; margin: 0 0 12px; }
+.empty pre { display: inline-block; text-align: left; margin: 12px 0; padding: 12px 18px; color: var(--text);
+  background: var(--raise); border: 1px solid var(--line); border-radius: 8px; font-size: 14px; }
+
+.viewer:focus { outline: none; }
+.viewer { position: fixed; inset: 0; z-index: 20; background: #000; display: flex; flex-direction: column;
+  align-items: center; touch-action: pan-y pinch-zoom; }
+.stage { flex: 1; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center;
+  padding: 64px 68px 0; }
+.stage img { max-width: 100%; max-height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none;
+  -webkit-user-drag: none; }
+.missing { color: var(--muted); text-align: center; max-width: 28rem; }
+.caption { width: 100%; max-width: 72ch; padding: 12px 16px 18px; text-align: center; min-height: 64px; }
+.desc { font-size: 17px; }
+.when { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.file { color: var(--faint); font-size: 12px; margin-top: 2px; overflow-wrap: anywhere; }
+.vbtn { position: absolute; display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+  border: 0; border-radius: 999px; background: rgba(28, 28, 31, .7); color: var(--text);
+  font-size: 20px; line-height: 1; cursor: pointer; transition: opacity .3s, background .15s; }
+.vbtn:hover { background: rgba(48, 48, 53, .95); }
+.vbtn.on { color: var(--accent); }
+.prev { left: 12px; top: 50%; transform: translateY(-50%); }
+.next { right: 12px; top: 50%; transform: translateY(-50%); }
+.close { right: 12px; top: 12px; }
+.play { right: 64px; top: 12px; font-size: 16px; }
+.full { right: 116px; top: 12px; }
+.count { position: absolute; left: 18px; top: 24px; color: var(--muted); font-size: 13px; transition: opacity .3s; }
+.viewer.idle { cursor: none; }
+.viewer.idle .vbtn, .viewer.idle .count { opacity: 0; }
+@media (max-width: 560px) { .stage { padding: 64px 0 0; } .prev, .next { display: none; } }
+
+.panel-wrap { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 16px;
+  background: rgba(0, 0, 0, .72); }
+.panel { width: min(36rem, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 20px;
+  background: var(--raise); border: 1px solid var(--line); border-radius: 12px; }
+.panel h2 { margin: 0 0 8px; font-size: 18px; font-weight: 600; }
+.panel p { margin: 8px 0; color: #d3cfc9; }
+.progress { height: 6px; margin: 14px 0 6px; background: var(--raise-2); border-radius: 3px; overflow: hidden; }
+.progress div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.small { color: var(--muted); font-size: 13px; }
+.err { color: var(--danger); }
+.panel details { margin-top: 10px; color: var(--muted); }
+.panel summary { cursor: pointer; }
+.panel ul { max-height: 12rem; overflow: auto; margin: 6px 0; padding-left: 20px; font-size: 13px; overflow-wrap: anywhere; }
+.actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<header class="bar">
+  <span class="brand">litebox</span>
+  <span class="meta" id="meta"></span>
+  <button class="btn" id="play-all" type="button" hidden>&#9654; Slideshow</button>
+  <button class="btn" id="refresh" type="button">Refresh</button>
+</header>
+<div class="notice" id="notice" hidden></div>
+<main class="grid" id="grid" aria-label="Photos"></main>
+<section class="empty" id="empty" hidden>
+  <h1>No photos yet</h1>
+  <p>Put your photos in a folder called <b>photos</b> next to this file:</p>
+  <pre>your drive/
+├── litebox.html
+└── photos/
+    ├── holiday 2024/
+    └── IMG_0001.jpg</pre>
+  <p>Then press <b>Refresh</b> and pick the folder that holds litebox.html.
+  litebox only reads your photos. It never changes, moves or renames them.</p>
+</section>
+
+<div class="viewer" id="viewer" hidden tabindex="-1" role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <span class="count" id="v-count"></span>
+  <div class="stage" id="v-stage">
+    <img id="v-img" alt="">
+    <p class="missing" id="v-missing" hidden>This photo isn't on the drive any more.
+      Press Refresh to bring litebox up to date.</p>
+  </div>
+  <div class="caption">
+    <div class="desc" id="v-desc"></div>
+    <div class="when" id="v-when"></div>
+    <div class="file" id="v-file"></div>
+  </div>
+  <button class="vbtn prev" id="v-prev" type="button" aria-label="Previous photo">&#8249;</button>
+  <button class="vbtn next" id="v-next" type="button" aria-label="Next photo">&#8250;</button>
+  <button class="vbtn full" id="v-full" type="button" aria-label="Full screen" title="Full screen (F)">&#10530;</button>
+  <button class="vbtn play" id="v-play" type="button" aria-label="Start slideshow" title="Slideshow (Space)">&#9654;</button>
+  <button class="vbtn close" id="v-close" type="button" aria-label="Close" title="Close (Esc)">&#10005;</button>
+</div>
+
+<div class="panel-wrap" id="panel" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="p-title">
+    <h2 id="p-title">Refresh litebox</h2>
+    <div id="p-body"></div>
+    <div class="progress" id="p-progress" hidden><div id="p-bar"></div></div>
+    <div class="small" id="p-count"></div>
+    <div id="p-skipped"></div>
+    <div class="actions" id="p-actions"></div>
+  </div>
+</div>
+<input type="file" id="picker" webkitdirectory multiple hidden>
+
+<script id="litebox-data" type="application/json">{"version":1,"refreshed":null,"photos":[],"skipped":[]}</script>
+<script>
+(function () {
+  'use strict';
+
+  // The page's own source, captured before anything changes, so refresh can save a copy with a new photo list.
+  const SOURCE = '<!doctype html>\n' + document.documentElement.outerHTML;
+  const DATA_OPEN = '<scr' + 'ipt id="litebox-data" type="application/json">';
+  const DATA_CLOSE = '</scr' + 'ipt>';
+
+  const PAGE_NAME = (function () {
+    try { return decodeURIComponent(location.pathname.split('/').pop()) || 'litebox.html'; }
+    catch (e) { return 'litebox.html'; }
+  })();
+  const SHOWN = /\.(jpe?g|jpe|jfif|png|webp|gif|avif)$/i;
+  const HIDDEN = /^(\..*|thumbs\.db|desktop\.ini)$/i;   // system files: ignored, not reported
+  const THUMB = 240;
+  const THUMB_QUALITY = 0.72;
+  const HEAD_BYTES = 512 * 1024;
+  const WORKERS = 4;
+  // Descriptions some cameras write by themselves; not worth showing.
+  const PLACEHOLDERS = new Set(['OLYMPUS DIGITAL CAMERA', 'SONY DSC', 'DIGITAL CAMERA', 'KODAK DIGITAL STILL CAMERA',
+    'MINOLTA DIGITAL CAMERA', 'KONICA MINOLTA DIGITAL CAMERA', 'PENTAX DIGITAL CAMERA', 'DIGITAL STILL CAMERA',
+    'EXIF_JPEG_PICTURE', 'SAMSUNG', 'SAMSUNG CAMERA PICTURES', 'LG CAMERA', 'CAMERA', 'IMAGE', 'PICASA', 'DEFAULT',
+    'DCIM', 'HDR', 'JPEG', 'JFIF', 'SCREENSHOT']);
+
+  const $ = (id) => document.getElementById(id);
+  const lb = window.litebox = { slideMs: 5000 };
+
+  let data = readData();
+
+  function readData() {
+    try {
+      const d = JSON.parse($('litebox-data').textContent);
+      if (d && Array.isArray(d.photos)) return d;
+    } catch (e) { /* fall through */ }
+    return { version: 1, refreshed: null, photos: [], skipped: [] };
+  }
+
+  // ---------- small helpers ----------
+
+  const pad = (n) => String(n).padStart(2, '0');
+  function localIso(d) {
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' +
+      pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+  function parseLocal(s) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(s || '');
+    return m ? new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6]) : null;
+  }
+  function fmtDay(d) {
+    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+  function fmtWhen(p) {
+    const d = parseLocal(p.taken);
+    if (!d) return '';
+    const s = fmtDay(d) + ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    return p.dateFrom === 'file' ? s + ' · file date' : s;
+  }
+  const baseName = (path) => path.split('/').pop();
+  const photoUrl = (path) => path.split('/').map(encodeURIComponent).join('/');
+  function fmtSize(bytes) {
+    return bytes >= 1048576 ? (bytes / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(bytes / 1024)) + ' KB';
+  }
+  function el(tag, props, text) {
+    const e = document.createElement(tag);
+    if (props) Object.assign(e, props);
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  // ---------- reading EXIF (date taken, description) ----------
+
+  function ascii(bytes, start, n) {
+    let s = '';
+    for (let i = 0; i < n && start + i < bytes.length; i++) s += String.fromCharCode(bytes[start + i]);
+    return s;
+  }
+  function decodeText(bytes) {
+    const cut = bytes.indexOf(0);
+    const b = cut >= 0 ? bytes.subarray(0, cut) : bytes;
+    try { return new TextDecoder('utf-8', { fatal: true }).decode(b); }
+    catch (e) { return new TextDecoder('windows-1252').decode(b); }
+  }
+  function exifDate(s) {
+    const m = /^(\d{4}):(\d{2}):(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(s || '');
+    if (!m || m[1] === '0000' || m[2] === '00') return null;
+    return m[1] + '-' + m[2] + '-' + m[3] + 'T' + m[4] + ':' + m[5] + ':' + m[6];
+  }
+  function readTiff(bytes, view, s, len) {
+    const end = Math.min(s + len, bytes.length);
+    const order = ascii(bytes, s, 2);
+    const le = order === 'II';
+    if (!le && order !== 'MM') return {};
+    const u16 = (o) => view.getUint16(s + o, le);
+    const u32 = (o) => view.getUint32(s + o, le);
+    if (u16(2) !== 42) return {};
+    function ifd(off) {
+      const out = {};
+      if (off < 8 || s + off + 2 > end) return out;
+      const n = u16(off);
+      for (let i = 0; i < n; i++) {
+        const e = off + 2 + i * 12;
+        if (s + e + 12 > end) break;
+        out[u16(e)] = { type: u16(e + 2), count: u32(e + 4), at: e + 8 };
+      }
+      return out;
+    }
+    function text(t) {
+      if (!t || (t.type !== 2 && t.type !== 7) || t.count === 0) return '';
+      const o = t.count <= 4 ? t.at : u32(t.at);
+      if (s + o + t.count > end) return '';
+      return decodeText(bytes.subarray(s + o, s + o + t.count));
+    }
+    const ifd0 = ifd(u32(4));
+    const exif = ifd0[0x8769] ? ifd(u32(ifd0[0x8769].at)) : {};
+    return {
+      taken: exifDate(text(exif[0x9003])) || exifDate(text(exif[0x9004])) || exifDate(text(ifd0[0x0132])),
+      description: text(ifd0[0x010E]),
+    };
+  }
+  function readExif(bytes) {
+    try {
+      const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      if (bytes[0] === 0xFF && bytes[1] === 0xD8) {                       // JPEG
+        let o = 2;
+        while (o + 4 <= bytes.length) {
+          if (bytes[o] !== 0xFF) { o++; continue; }
+          const m = bytes[o + 1];
+          if (m === 0xFF) { o++; continue; }
+          if (m === 0x01 || (m >= 0xD0 && m <= 0xD8)) { o += 2; continue; }
+          if (m === 0xDA || m === 0xD9) break;
+          const len = v.getUint16(o + 2);
+          if (m === 0xE1 && len >= 8 && ascii(bytes, o + 4, 6) === 'Exif\0\0') return readTiff(bytes, v, o + 10, len - 8);
+          o += 2 + len;
+        }
+      } else if (ascii(bytes, 1, 3) === 'PNG') {                           // PNG eXIf chunk
+        let o = 8;
+        while (o + 12 <= bytes.length) {
+          const len = v.getUint32(o);
+          const type = ascii(bytes, o + 4, 4);
+          if (type === 'eXIf') return readTiff(bytes, v, o + 8, len);
+          if (type === 'IDAT' || type === 'IEND') break;
+          o += 12 + len;
+        }
+      } else if (ascii(bytes, 0, 4) === 'RIFF' && ascii(bytes, 8, 4) === 'WEBP') {   // WebP EXIF chunk
+        let o = 12;
+        while (o + 8 <= bytes.length) {
+          const type = ascii(bytes, o, 4);
+          const len = v.getUint32(o + 4, true);
+          if (type === 'EXIF') {
+            let s = o + 8, l = len;
+            if (ascii(bytes, s, 6) === 'Exif\0\0') { s += 6; l -= 6; }
+            return readTiff(bytes, v, s, l);
+          }
+          o += 8 + len + (len & 1);
+        }
+      }
+    } catch (e) { /* unreadable EXIF: no date, no description */ }
+    return {};
+  }
+  function cleanDescription(s) {
+    const t = (s || '').replace(/\s+/g, ' ').trim();
+    return PLACEHOLDERS.has(t.toUpperCase()) ? '' : t;
+  }
+
+  // ---------- thumbnails ----------
+
+  function loadImage(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => resolve({ img, url });
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode')); };
+      img.src = url;
+    });
+  }
+  function canvas(size) {
+    const c = el('canvas');
+    c.width = c.height = size;
+    const ctx = c.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    return { c, ctx };
+  }
+  // A square, centre-cropped thumbnail. Halving in steps keeps it sharp in every browser.
+  function makeThumb(img, w, h) {
+    let src = img, sx = (w - Math.min(w, h)) / 2, sy = (h - Math.min(w, h)) / 2, size = Math.min(w, h);
+    while (size > THUMB * 2) {
+      const half = Math.round(size / 2);
+      const step = canvas(half);
+      step.ctx.drawImage(src, sx, sy, size, size, 0, 0, half, half);
+      src = step.c; sx = 0; sy = 0; size = half;
+    }
+    const out = canvas(THUMB);
+    out.ctx.fillStyle = '#161618';
+    out.ctx.fillRect(0, 0, THUMB, THUMB);
+    out.ctx.drawImage(src, sx, sy, size, size, 0, 0, THUMB, THUMB);
+    return out.c.toDataURL('image/jpeg', THUMB_QUALITY);
+  }
+
+  // ---------- building the photo list ----------
+
+  async function readPhoto(entry) {
+    const file = await entry.getFile();
+    const head = new Uint8Array(await file.slice(0, HEAD_BYTES).arrayBuffer());
+    const exif = readExif(head);
+    const { img, url } = await loadImage(file);
+    let thumb, width, height;
+    try {
+      width = img.naturalWidth; height = img.naturalHeight;   // already turned the right way up
+      if (!width || !height) throw new Error('empty');
+      thumb = makeThumb(img, width, height);
+    } finally { URL.revokeObjectURL(url); }
+    const taken = exif.taken || localIso(new Date(file.lastModified));
+    return {
+      path: entry.path, taken, dateFrom: exif.taken ? 'exif' : 'file',
+      description: cleanDescription(exif.description), width, height, thumb,
+    };
+  }
+
+  // entries: [{ path: 'photos/…', getFile: async () => File }]
+  async function buildIndex(entries, onProgress, isCancelled) {
+    const photos = [], skipped = [];
+    const queue = [];
+    for (const e of entries) {
+      if (SHOWN.test(e.path)) queue.push(e);
+      else skipped.push({ path: e.path, why: 'not a format browsers can show' });
+    }
+    const total = queue.length;
+    let done = 0;
+    async function worker() {
+      while (queue.length && !(isCancelled && isCancelled())) {
+        const e = queue.shift();
+        try { photos.push(await readPhoto(e)); }
+        catch (err) { skipped.push({ path: e.path, why: 'could not be read' }); }
+        done++;
+        if (onProgress) onProgress(done, total);
+      }
+    }
+    await Promise.all(Array.from({ length: WORKERS }, worker));
+    photos.sort((a, b) => (a.taken < b.taken ? 1 : a.taken > b.taken ? -1 : a.path.localeCompare(b.path)));
+    skipped.sort((a, b) => a.path.localeCompare(b.path));
+    return { version: 1, refreshed: new Date().toISOString(), photos, skipped };
+  }
+
+  function makeHtml(d) {
+    const i = SOURCE.indexOf(DATA_OPEN);
+    if (i < 0) throw new Error('litebox could not find its own photo list');
+    const start = i + DATA_OPEN.length;
+    const end = SOURCE.indexOf(DATA_CLOSE, start);
+    const json = JSON.stringify(d).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+    return SOURCE.slice(0, start) + json + SOURCE.slice(end);
+  }
+
+  // Picked files → entries under the photos folder. `rel` starts with the picked folder's name.
+  function entriesFromPicked(list) {
+    const split = list.map((x) => ({ x, parts: x.rel.split('/') }));
+    const isPhotos = (s) => (s || '').toLowerCase() === 'photos';
+    let use;
+    if (split.some((s) => s.parts.length > 2 && isPhotos(s.parts[1]))) {         // picked the folder holding photos/
+      use = split.filter((s) => s.parts.length > 2 && isPhotos(s.parts[1])).map((s) => ({ s, parts: s.parts.slice(1) }));
+    } else if (split.length && isPhotos(split[0].parts[0])) {                   // picked photos/ itself
+      use = split.map((s) => ({ s, parts: s.parts }));
+    } else return null;
+    return use.filter((u) => !u.parts.slice(1).some((p) => HIDDEN.test(p)))
+      .map((u) => ({ path: u.parts.join('/'), getFile: u.s.x.getFile }));
+  }
+
+  async function walkHandle(dir, prefix, out) {
+    for await (const [name, handle] of dir.entries()) {
+      if (HIDDEN.test(name)) continue;
+      if (handle.kind === 'directory') await walkHandle(handle, prefix + name + '/', out);
+      else out.push({ path: prefix + name, getFile: () => handle.getFile() });
+    }
+    return out;
+  }
+  async function childNamed(dir, want, kind) {
+    for await (const [name, handle] of dir.entries()) {
+      if (handle.kind === kind && name.toLowerCase() === want.toLowerCase()) return handle;
+    }
+    return null;
+  }
+
+  // ---------- the grid ----------
+
+  let observer = null;
+  function render() {
+    const grid = $('grid');
+    const n = data.photos.length;
+    if (observer) observer.disconnect();
+    grid.textContent = '';
+    $('empty').hidden = n > 0;
+    $('play-all').hidden = n === 0;
+    $('meta').textContent = n
+      ? n.toLocaleString() + (n === 1 ? ' photo' : ' photos') +
+        (data.refreshed ? ' · updated ' + fmtDay(new Date(data.refreshed)) : '')
+      : '';
+    observer = 'IntersectionObserver' in window ? new IntersectionObserver((seen) => {
+      for (const s of seen) {
+        if (!s.isIntersecting) continue;
+        s.target.firstChild.src = data.photos[+s.target.dataset.i].thumb;
+        observer.unobserve(s.target);
+      }
+    }, { rootMargin: '1200px 0px' }) : null;
+    const frag = document.createDocumentFragment();
+    data.photos.forEach((p, i) => {
+      const label = p.description || baseName(p.path);
+      const tile = el('button', { className: 'tile', type: 'button', title: label });
+      tile.dataset.i = i;
+      tile.setAttribute('aria-label', label);
+      const img = el('img', { alt: '', decoding: 'async' });
+      if (!observer) img.src = p.thumb;
+      tile.appendChild(img);
+      frag.appendChild(tile);
+    });
+    grid.appendChild(frag);
+    if (observer) for (const t of grid.children) observer.observe(t);
+  }
+
+  $('grid').addEventListener('click', (e) => {
+    const t = e.target.closest('.tile');
+    if (t) openViewer(+t.dataset.i);
+  });
+
+  // ---------- the viewer and slideshow ----------
+
+  let cur = -1, playing = false, slideTimer = 0, idleTimer = 0, swiped = false;
+  const viewer = $('viewer'), vImg = $('v-img');
+
+  function openViewer(i) {
+    if (!data.photos.length) return;
+    cur = Math.max(0, Math.min(i, data.photos.length - 1));
+    viewer.hidden = false;
+    document.body.style.overflow = 'hidden';
+    show();
+    viewer.focus();
+  }
+  function closeViewer() {
+    stopShow();
+    viewer.hidden = true;
+    document.body.style.overflow = '';
+    vImg.removeAttribute('src');
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    const tile = $('grid').children[cur];
+    if (tile) tile.focus();
+    cur = -1;
+  }
+  function show() {
+    const p = data.photos[cur];
+    $('v-missing').hidden = true;
+    vImg.hidden = false;
+    vImg.alt = p.description || baseName(p.path);
+    vImg.src = photoUrl(p.path);
+    $('v-desc').textContent = p.description || '';
+    $('v-when').textContent = fmtWhen(p);
+    $('v-file').textContent = p.path.replace(/^[^/]*\//, '');
+    $('v-count').textContent = (cur + 1).toLocaleString() + ' / ' + data.photos.length.toLocaleString();
+    for (const d of [1, -1]) {                       // warm up the neighbours
+      const q = data.photos[(cur + d + data.photos.length) % data.photos.length];
+      new Image().src = photoUrl(q.path);
+    }
+  }
+  vImg.addEventListener('error', () => {
+    if (viewer.hidden || !vImg.getAttribute('src')) return;
+    vImg.hidden = true;
+    $('v-missing').hidden = false;
+  });
+  function go(d) {
+    const n = data.photos.length;
+    cur = (cur + d + n) % n;
+    show();
+    schedule();
+  }
+  function schedule() {
+    clearTimeout(slideTimer);
+    if (playing) slideTimer = setTimeout(() => go(1), lb.slideMs);
+  }
+  function startShow() {
+    playing = true;
+    $('v-play').classList.add('on');
+    $('v-play').innerHTML = '&#10074;&#10074;';
+    $('v-play').setAttribute('aria-label', 'Pause slideshow');
+    schedule();
+    wake();
+  }
+  function stopShow() {
+    playing = false;
+    clearTimeout(slideTimer);
+    clearTimeout(idleTimer);
+    viewer.classList.remove('idle');
+    $('v-play').classList.remove('on');
+    $('v-play').innerHTML = '&#9654;';
+    $('v-play').setAttribute('aria-label', 'Start slideshow');
+  }
+  function wake() {
+    viewer.classList.remove('idle');
+    clearTimeout(idleTimer);
+    if (playing) idleTimer = setTimeout(() => viewer.classList.add('idle'), 2500);
+  }
+  const fullApi = document.documentElement.requestFullscreen ? 'requestFullscreen'
+    : document.documentElement.webkitRequestFullscreen ? 'webkitRequestFullscreen' : null;
+  if (!fullApi) $('v-full').hidden = true;
+  function toggleFull() {
+    if (!fullApi) return;
+    const fs = document.fullscreenElement || document.webkitFullscreenElement;
+    if (fs) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    else { const r = viewer[fullApi](); if (r && r.catch) r.catch(() => {}); }
+  }
+
+  $('v-prev').addEventListener('click', () => go(-1));
+  $('v-next').addEventListener('click', () => go(1));
+  $('v-close').addEventListener('click', closeViewer);
+  $('v-play').addEventListener('click', () => (playing ? stopShow() : startShow()));
+  $('v-full').addEventListener('click', toggleFull);
+  $('play-all').addEventListener('click', () => { openViewer(0); startShow(); });
+  viewer.addEventListener('pointermove', wake);
+  $('v-stage').addEventListener('click', (e) => {
+    if (swiped) { swiped = false; return; }
+    if (e.target === e.currentTarget) closeViewer();   // a click on the black around the photo
+  });
+  let downX = 0, downY = 0;
+  viewer.addEventListener('pointerdown', (e) => { downX = e.clientX; downY = e.clientY; swiped = false; });
+  viewer.addEventListener('pointerup', (e) => {
+    const dx = e.clientX - downX, dy = e.clientY - downY;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) { swiped = true; go(dx < 0 ? 1 : -1); }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (!$('panel').hidden) {
+      if (e.key === 'Escape' && !working) closePanel();
+      return;
+    }
+    if (viewer.hidden || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === 'ArrowRight') go(1);
+    else if (e.key === 'ArrowLeft') go(-1);
+    else if (e.key === 'Escape') closeViewer();
+    else if (e.key === ' ' || e.key === 'Spacebar') (playing ? stopShow() : startShow());
+    else if (e.key === 'f' || e.key === 'F') toggleFull();
+    else return;
+    e.preventDefault();
+    wake();
+  });
+
+  // ---------- refresh ----------
+
+  let working = false, cancelled = false, preferInput = false;
+
+  function panel(title, body, actions, opts) {
+    opts = opts || {};
+    $('panel').hidden = false;
+    $('p-title').textContent = title;
+    const b = $('p-body');
+    b.textContent = '';
+    for (const line of [].concat(body)) {
+      if (typeof line === 'string') b.appendChild(el('p', null, line));
+      else b.appendChild(line);
+    }
+    $('p-progress').hidden = !opts.progress;
+    $('p-count').textContent = '';
+    $('p-skipped').textContent = '';
+    const a = $('p-actions');
+    a.textContent = '';
+    for (const [label, fn, primary] of actions) {
+      const btn = el('button', { className: 'btn' + (primary ? ' primary' : ''), type: 'button' }, label);
+      btn.addEventListener('click', fn);
+      a.appendChild(btn);
+    }
+    const first = a.querySelector('.primary') || a.firstChild;
+    if (first) first.focus();
+  }
+  function closePanel() { $('panel').hidden = true; $('refresh').focus(); }
+  function progress(done, total) {
+    $('p-bar').style.width = (total ? (100 * done / total) : 100) + '%';
+    $('p-count').textContent = 'Read ' + done.toLocaleString() + ' of ' + total.toLocaleString() + ' photos';
+  }
+  function skippedList(skipped) {
+    const box = $('p-skipped');
+    box.textContent = '';
+    if (!skipped.length) return;
+    const det = el('details');
+    det.appendChild(el('summary', null, skipped.length.toLocaleString() +
+      (skipped.length === 1 ? ' file' : ' files') + " litebox can't show"));
+    const ul = el('ul');
+    for (const s of skipped) ul.appendChild(el('li', null, s.path.replace(/^[^/]*\//, '') + ' (' + s.why + ')'));
+    det.appendChild(ul);
+    box.appendChild(det);
+  }
+
+  function startRefresh() {
+    panel('Refresh litebox', [
+      'Choose the folder that holds ' + PAGE_NAME + ' and your photos folder. litebox reads every photo, makes ' +
+      'small previews, and saves an updated ' + PAGE_NAME + '.',
+      'Your photos are only read, never changed. Your browser may ask for permission first.',
+    ], [['Cancel', closePanel], ['Choose folder', chooseFolder, true]]);
+  }
+
+  async function chooseFolder() {
+    if (!window.showDirectoryPicker || preferInput) { $('picker').click(); return; }
+    let dir;
+    try { dir = await window.showDirectoryPicker({ id: 'litebox', mode: 'readwrite' }); }
+    catch (e) {
+      if (e && e.name === 'AbortError') return;
+      preferInput = true;
+      panel('Refresh litebox', [
+        "Your browser wouldn't open that folder for saving. Choose it again and litebox will download the new " +
+        PAGE_NAME + ' for you to copy onto the drive instead.',
+      ], [['Cancel', closePanel], ['Choose folder', chooseFolder, true]]);
+      return;
+    }
+    let entries = null, target = null;
+    try {
+      const photosDir = await childNamed(dir, 'photos', 'directory');
+      if (photosDir) {
+        entries = await walkHandle(photosDir, photosDir.name + '/', []);
+        target = await childNamed(dir, PAGE_NAME, 'file');
+      } else if (dir.name.toLowerCase() === 'photos') {
+        entries = await walkHandle(dir, dir.name + '/', []);
+      }
+    } catch (e) { entries = null; }
+    if (!entries) return noPhotosFolder(dir.name);
+    run(entries, target);
+  }
+
+  $('picker').addEventListener('change', () => {
+    const files = Array.from($('picker').files);
+    $('picker').value = '';
+    if (!files.length) return;
+    const entries = entriesFromPicked(files.map((f) => ({
+      rel: f.webkitRelativePath || f.name, getFile: async () => f,
+    })));
+    if (!entries) return noPhotosFolder((files[0].webkitRelativePath || '').split('/')[0]);
+    run(entries, null);
+  });
+
+  function noPhotosFolder(name) {
+    const p = el('p', { className: 'err' }, 'There is no photos folder in “' + (name || 'that folder') + '”.');
+    panel('Refresh litebox', [p,
+      'Choose the folder that holds ' + PAGE_NAME + ' and a folder called photos.',
+    ], [['Cancel', closePanel], ['Choose folder', chooseFolder, true]]);
+  }
+
+  async function run(entries, target) {
+    working = true; cancelled = false;
+    panel('Reading your photos…', ['This can take a few minutes for a big collection. Keep this tab open.'],
+      [['Cancel', () => { cancelled = true; }]], { progress: true });
+    progress(0, entries.filter((e) => SHOWN.test(e.path)).length);
+    let next;
+    try { next = await buildIndex(entries, progress, () => cancelled); }
+    finally { working = false; }
+    if (cancelled) {
+      panel('Refresh cancelled', ['Nothing was saved. litebox still shows the photos it had before.'],
+        [['Close', closePanel, true]]);
+      return;
+    }
+    const html = makeHtml(next);
+    const size = new Blob([html]).size;
+    const found = next.photos.length.toLocaleString() + (next.photos.length === 1 ? ' photo' : ' photos');
+    let saved = false;
+    if (target) {
+      try {
+        const w = await target.createWritable();
+        await w.write(html);
+        await w.close();
+        saved = true;
+      } catch (e) { saved = false; }
+    }
+    data = next;
+    render();
+    if (saved) {
+      panel('litebox is up to date', ['Found ' + found + '. Saved ' + PAGE_NAME + ' (' + fmtSize(size) + ').'],
+        [['Done', closePanel, true]]);
+    } else {
+      panel('One more step', [
+        'Found ' + found + '. Your browser saves the updated ' + PAGE_NAME + ' (' + fmtSize(size) + ') to your ' +
+        'downloads. Copy it onto the drive next to the photos folder, replacing the old one.',
+      ], [['Close', closePanel], ['Download ' + PAGE_NAME, () => download(html), true]]);
+      showNotice('These photos show now, but the drive still has the old ' + PAGE_NAME +
+        '. Download the new one and copy it onto the drive to keep them.');
+    }
+    skippedList(next.skipped);
+  }
+
+  function download(html) {
+    const a = el('a', { href: URL.createObjectURL(new Blob([html], { type: 'text/html' })), download: PAGE_NAME });
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  }
+  function showNotice(text) { $('notice').textContent = text; $('notice').hidden = false; }
+
+  $('refresh').addEventListener('click', startRefresh);
+
+  Object.assign(lb, {
+    readExif, cleanDescription, buildIndex, makeHtml, entriesFromPicked, render,
+    open: openViewer, close: closeViewer, next: () => go(1), prev: () => go(-1), play: startShow, stop: stopShow,
+  });
+  Object.defineProperties(lb, {
+    data: { get: () => data },
+    index: { get: () => cur },
+    playing: { get: () => playing },
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

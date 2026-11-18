@@ -63,3 +63,10 @@ None.
 Build litebox's first working gallery in this session, on `main`, from the rules above: one file,
 `litebox.html`, that shows the photos in `photos/` beside it and refreshes its own built-in list and thumbnails,
 plus `tests/` to prove it. Size: one session.
+
+## Measured after the build
+
+On this Raspberry Pi 5 in headless Chromium (2026-11-18): refresh read 150 photos of 4032x3024 (1.5 MB each) in
+41 s, about 0.27 s a photo. Thumbnails came to about 14–16 KB each on these noisy test images, not the 10 KB Q8
+guessed, so a 3,000-photo `litebox.html` is about 49 MB; it opened to a drawn grid in 3.7 s, against 2.4 s for an
+empty litebox. A typical laptop should be several times faster; not measured.

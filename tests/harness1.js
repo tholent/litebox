@@ -1,0 +1,113 @@
+// Run 1: refresh an empty litebox from the test drive's files and check the photo list it builds.
+// Injected after litebox's own script by tests/run.py; reports into <pre id="lb-results">.
+(async function () {
+  'use strict';
+  const R = [];
+  const ok = (name, cond, info) => R.push({ name, ok: !!cond, info: cond ? null : (info === undefined ? null : info) });
+  const lb = window.litebox;
+
+  function load(f) {
+    return new Promise((resolve, reject) => {
+      const x = new XMLHttpRequest();
+      x.open('GET', f.rel.split('/').map(encodeURIComponent).join('/'));
+      x.responseType = 'blob';
+      x.onload = () => resolve(new File([x.response], f.rel.split('/').pop(), { lastModified: f.mtime }));
+      x.onerror = () => reject(new Error('could not load ' + f.rel));
+      x.send();
+    });
+  }
+  function pixel(dataUrl, x, y) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth; c.height = img.naturalHeight;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        resolve({ w: img.naturalWidth, h: img.naturalHeight, rgb: Array.from(ctx.getImageData(x, y, 1, 1).data.slice(0, 3)) });
+      };
+      img.onerror = () => resolve(null);
+      img.src = dataUrl;
+    });
+  }
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+  try {
+    ok('empty litebox shows the "No photos yet" message', !document.getElementById('empty').hidden);
+    ok('empty litebox hides the slideshow button', document.getElementById('play-all').hidden);
+
+    const files = window.MANIFEST.files;
+    const expectEntries = [
+      'photos/2021 lake/a.jpg', 'photos/IMG_0002.HEIC', 'photos/b-rotated.jpg', 'photos/broken.jpg',
+      'photos/c.png', 'photos/clip.mp4', 'photos/d.webp', 'photos/e.jpg', 'photos/h #1 & more.jpg',
+    ].sort();
+
+    const picked = lb.entriesFromPicked(files.map((f) => ({ rel: 'drive/' + f.rel, getFile: () => load(f) })));
+    const got = picked ? picked.map((e) => e.path).sort() : null;
+    ok('picking the drive folder takes only photos/, without hidden files', same(got, expectEntries), got);
+
+    const pickedB = lb.entriesFromPicked(files.filter((f) => f.rel.startsWith('photos/'))
+      .map((f) => ({ rel: f.rel, getFile: () => load(f) })));
+    const gotB = pickedB ? pickedB.map((e) => e.path).sort() : null;
+    ok('picking photos/ itself gives the same list', same(gotB, expectEntries), gotB);
+    ok('a folder without photos/ is refused', lb.entriesFromPicked([{ rel: 'stuff/a.jpg', getFile: null }]) === null);
+
+    let lastProgress = null;
+    const d = await lb.buildIndex(picked, (done, total) => { lastProgress = [done, total]; });
+    ok('progress reaches the end', same(lastProgress, [6 + 1, 6 + 1]), lastProgress);   // 6 photos + broken.jpg
+
+    const order = d.photos.map((p) => p.path);
+    ok('six photos, newest first', same(order, [
+      'photos/h #1 & more.jpg', 'photos/b-rotated.jpg', 'photos/c.png', 'photos/2021 lake/a.jpg',
+      'photos/d.webp', 'photos/e.jpg']), order);
+    ok('skipped files are reported with reasons', same(d.skipped, [
+      { path: 'photos/broken.jpg', why: 'could not be read' },
+      { path: 'photos/clip.mp4', why: 'not a format browsers can show' },
+      { path: 'photos/IMG_0002.HEIC', why: 'not a format browsers can show' }]), d.skipped);
+
+    const by = Object.fromEntries(d.photos.map((p) => [p.path.split('/').pop(), p]));
+    const a = by['a.jpg'], b = by['b-rotated.jpg'], c = by['c.png'], dw = by['d.webp'], e = by['e.jpg'], h = by['h #1 & more.jpg'];
+    ok('JPEG: date taken from EXIF', a && a.taken === '2021-06-01T10:00:00' && a.dateFrom === 'exif', a && a.taken);
+    ok('JPEG: EXIF description', a && a.description === 'Lake at dawn', a && a.description);
+    ok('UTF-8 description kept intact', b && b.description === 'Café on the corner – ünïcode', b && b.description);
+    ok('rotated photo measured the right way up', b && b.width === 400 && b.height === 800, b && [b.width, b.height]);
+    ok('PNG without EXIF falls back to the file date', c && c.taken === '2022-03-04T12:00:00' && c.dateFrom === 'file',
+      c && [c.taken, c.dateFrom]);
+    ok('WebP: EXIF date and description', dw && dw.taken === '2020-12-25T09:00:00' && dw.description === 'Christmas morning',
+      dw && [dw.taken, dw.description]);
+    ok('camera placeholder description hidden', e && e.description === '', e && e.description);
+    ok('no description gives an empty one', h && h.description === '', h && h.description);
+
+    const thumbs = await Promise.all(d.photos.map((p) => pixel(p.thumb, 0, 0)));
+    ok('every thumbnail is a 240px square JPEG', d.photos.every((p) => p.thumb.startsWith('data:image/jpeg;base64,')) &&
+      thumbs.every((t) => t && t.w === 240 && t.h === 240), thumbs.map((t) => t && [t.w, t.h]));
+    const top = await pixel(b.thumb, 120, 30), bottom = await pixel(b.thumb, 120, 210);
+    ok('rotated photo thumbnail turned the right way (red top, blue bottom)',
+      top && bottom && top.rgb[0] > 150 && top.rgb[2] < 100 && bottom.rgb[2] > 150 && bottom.rgb[0] < 100,
+      [top && top.rgb, bottom && bottom.rgb]);
+    const avg = thumbs.length ? Math.round(d.photos.reduce((s, p) => s + p.thumb.length, 0) / d.photos.length) : 0;
+    ok('thumbnails stay small (under 20 KB each)', avg < 20000, avg);
+
+    // A tricky description must not break out of the page's data block.
+    const tricky = JSON.parse(JSON.stringify(d));
+    tricky.photos[0].description = '</script><b>x</b>\u2028';
+    const html = lb.makeHtml(d);
+    const parsed = new DOMParser().parseFromString(lb.makeHtml(tricky), 'text/html');
+    const back = JSON.parse(parsed.getElementById('litebox-data').textContent);
+    ok('saved list survives a description containing </script>', back.photos[0].description === tricky.photos[0].description);
+    const again = JSON.parse(new DOMParser().parseFromString(html, 'text/html').getElementById('litebox-data').textContent);
+    ok('saved file holds the new photo list', same(again.photos.map((p) => p.path), order));
+    ok('saved file starts with a doctype', html.startsWith('<!doctype html>'));
+
+    const out = document.createElement('pre');
+    out.id = 'lb-out';
+    out.textContent = btoa(unescape(encodeURIComponent(html)));
+    document.body.appendChild(out);
+  } catch (err) {
+    ok('harness 1 ran without errors', false, String((err && err.stack) || err));
+  }
+  const pre = document.createElement('pre');
+  pre.id = 'lb-results';
+  pre.textContent = JSON.stringify(R);
+  document.body.appendChild(pre);
+})();
