@@ -7,18 +7,20 @@ The project's live state. Update it when work lands. Every claim cites at least 
 ## Now
 
 - Project prepared for agents with project-prep: the rules are in `AGENTS.md`.
+- First decision drafted, awaiting Chris's ratification (`docs/decisions/ADR-001-set-up-litebox-with-the-smallest-agent-setup.md`).
 
 ## Next
 
-- Put the first decision on record: how this project is set up, and its decision format (`AGENTS.md`).
+- Ratify or change ADR-001 (`docs/decisions/ADR-001-set-up-litebox-with-the-smallest-agent-setup.md`).
+- Fill in the one-line description of what litebox is (`AGENTS.md`).
 
 ## Known debt
 
-- The first decision is not on record yet (`AGENTS.md`).
+- ADR-001 is proposed, not yet ratified (`docs/decisions/INDEX.md`).
 
 ## Log
 
-- 2026-11-18: prepared with project-prep.
+- 2026-11-18: prepared with project-prep; ADR-001 drafted with makeadr.
 
 ## How this file is kept
 

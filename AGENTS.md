@@ -10,6 +10,7 @@ None yet. The owner sets one; agents do not invent it.
 
 ## Where things live
 - `STATUS.md` — where we are right now. Short. Update it at the end of each session.
+- `docs/decisions/` — decision records (ADRs), in ADR+ format; its `README.md` names the format and owner.
 
 ## Ground rules
 - The repository is the only shared memory between sessions, agents and accounts.
