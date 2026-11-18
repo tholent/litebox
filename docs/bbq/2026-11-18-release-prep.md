@@ -76,3 +76,9 @@ The request, word for word:
   without git (a downloaded ZIP); the deploy-key note above no longer names local paths. Left open: the linters
   and workflows have not run, and nobody has tried a real USB stick on Windows or macOS.
 - `CHANGELOG.md` added for 0.1.0.
+- Pushed `main` on Chris's word ("Push main"). First runs: Tests passed; Lint failed on 13 ruff 0.17 findings in
+  the Python test scripts (its default rules are broader than ruff's older ones). Fixed in `9a33f42` and pushed on
+  Chris's word ("Push the fix"): Lint, including ESLint's first run, and Tests both pass.
+- Chris asked, word for word, to add this badge to the README:
+  `[![AI framework: pitmaster](https://img.shields.io/badge/AI_framework-pitmaster-yellow)](https://github.com/MapleSyrupOS/pitmaster)`
+  (written as HTML to match the README's centred badge row).

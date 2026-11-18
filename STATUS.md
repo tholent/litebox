@@ -13,6 +13,7 @@ The project's live state. Update it when work lands. Every claim cites at least 
 - Logo in the header bar and as the tab icon, embedded in the page; a Header text setting in setup (`assets/logo.png`, `docs/bbq/2026-11-18-second-round.md`).
 - Setup reworked: "Load photos" / "Update photos" only reads them and shows a green check with the time; litebox.html is saved or downloaded only by its own button, and closing setup or the tab with anything unsaved warns first (`litebox.html`, `docs/bbq/2026-11-18-second-round.md`).
 - Release prep: Apache-2.0 `LICENSE`, license headers, a user-facing README, and GitHub workflows for lint and tests with shared setup and caching (`README.md`, `.github/workflows/lint.yml`, `.github/workflows/test.yml`, `docs/bbq/2026-11-18-release-prep.md`).
+- Pushed to github.com/tholent/litebox on 2026-11-18; Lint (ruff, ESLint, license headers) and Tests pass there, with the pip and npm caches in use (`.github/workflows/lint.yml`, `.github/workflows/test.yml`).
 - Automated tests pass in headless Chromium: 144 checks, run with `python3 tests/run.py` (`tests/run.py`).
 
 ## Next
@@ -21,7 +22,6 @@ The project's live state. Update it when work lands. Every claim cites at least 
 
 ## Known debt
 
-- The linters (ruff, ESLint) have never run, and neither workflow has run on GitHub: no Node.js or ruff on this machine, and nothing pushed yet (`docs/bbq/2026-11-18-release-prep.md`).
 - The folder pickers and saving in place (Chrome, Edge) are not covered by the automated tests; they need a person to click. The download route is tested by catching the download (`tests/harness1.js`).
 - Refresh speed measured only on this Raspberry Pi 5: about 0.27 s per 12-megapixel photo, so about 14 minutes for 3,000; a 3,000-photo file is about 49 MB (`docs/bbq/2026-11-18-first-working-gallery.md`).
 - The Plain words rules offer to file terms in a glossary, but `docs/glossary.md` does not exist yet (`AGENTS.md`).
