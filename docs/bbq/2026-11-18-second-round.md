@@ -83,3 +83,10 @@ Nothing owed.
   - Defaulted: **on phones the logo and header text take the top line of the bar**, so a long header text never
     squeezes the album name and count; on wider screens they share one line, and a very long text ends in "…"
     with the full text on hover. veto: one line on phones too.
+- 2026-11-18: Chris reported, word for word: "the header text isn't being displayed in the page and I would like to
+  append '| litebox' to the end of the page title".
+  - **R11 Tab title.** With a header text set, the browser tab reads "<header text> | litebox"; with none, "litebox".
+    The header bar itself shows the header text alone.
+  - The missing header text did not reproduce here (Chromium 156 and Firefox 159, 360 to 1280 px wide, album grid
+    and inside an album). The bar no longer lets anything squeeze the header text narrower than the text itself,
+    and a test checks it is drawn at full width. Which browser Chris saw it in is owed.

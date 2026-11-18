@@ -54,8 +54,8 @@
     ok('address names the album, so Back works', location.hash === '#album=', location.hash);
     ok('album title and count', text('title') === 'Unsorted' && text('meta') === '5 photos', [text('title'), text('meta')]);
     ok('back to albums link shows', visible('back'));
-    await sleep(200);
     const grid = $('grid');
+    for (let t = 0; t < 30 && !(grid.children[0].firstChild.src || '').startsWith('data:'); t++) await sleep(100);
     ok('visible tiles get their thumbnails', (grid.children[0].firstChild.src || '').startsWith('data:image/jpeg'));
     ok('tiles are labelled with the description or file name',
       grid.children[0].getAttribute('aria-label') === 'h #1 & more.jpg' &&
@@ -176,10 +176,13 @@
     $('s-title').value = 'Our family photos';
     $('s-title').dispatchEvent(new Event('input', { bubbles: true }));
     ok('header text and tab title change straight away', text('brand-text') === 'Our family photos' &&
-      document.title === 'Our family photos', [text('brand-text'), document.title]);
+      document.title === 'Our family photos | litebox', [text('brand-text'), document.title]);
+    ok('header text is drawn at full width', $('brand-text').scrollWidth > 60 &&
+      $('brand-text').clientWidth === $('brand-text').scrollWidth, [$('brand-text').clientWidth, $('brand-text').scrollWidth]);
     $('s-title').value = '  ';
     $('s-title').dispatchEvent(new Event('input', { bubbles: true }));
-    ok('blank header text falls back to litebox', text('brand-text') === 'litebox' && lb.data.settings.title === '');
+    ok('blank header text falls back to litebox', text('brand-text') === 'litebox' && document.title === 'litebox' &&
+      lb.data.settings.title === '');
     $('s-title').value = 'Our family photos';
     $('s-title').dispatchEvent(new Event('input', { bubbles: true }));
     $('s-footer').value = 'For Mum, with love';

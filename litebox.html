@@ -32,12 +32,12 @@ button, input { font: inherit; color: inherit; }
 .bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
   padding: 10px 16px; background: rgba(12, 12, 13, .9); border-bottom: 1px solid var(--line);
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-.brand { display: flex; align-items: center; gap: 9px; max-width: min(40rem, 100%); min-width: 0; font-weight: 650;
+.brand { display: flex; flex: none; align-items: center; gap: 9px; max-width: min(40rem, 100%); font-weight: 650;
   letter-spacing: .03em; background: none; border: 0; padding: 0; cursor: pointer; }
 .brand img { width: 28px; height: 28px; flex: none; }
-.brand span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .back { background: none; border: 0; padding: 2px 6px 2px 0; color: var(--accent); cursor: pointer; white-space: nowrap; }
-.where { flex: 1; min-width: 8rem; display: flex; align-items: baseline; gap: 8px; overflow: hidden; }
+.where { flex: 1; min-width: 14rem; display: flex; align-items: baseline; gap: 8px; overflow: hidden; }
 .title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .meta { color: var(--muted); font-size: 13px; white-space: nowrap; }
 .search { width: 16rem; max-width: 100%; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line);
@@ -55,6 +55,7 @@ button, input { font: inherit; color: inherit; }
   .bar { padding: 8px 12px; }
   .search { order: 5; width: 100%; }
   .brand { flex-basis: 100%; }
+  .where { min-width: 8rem; }
 }
 
 .notice { margin: 12px 16px 0; padding: 10px 14px; border: 1px solid var(--accent); border-radius: 8px;
@@ -645,8 +646,8 @@ button, input { font: inherit; color: inherit; }
     $('empty').hidden = n > 0;
     $('search').hidden = n === 0;
     $('nothing').hidden = true;
-    $('brand-text').textContent = data.settings.title || NAME;
-    document.title = $('home').title = data.settings.title || NAME;
+    $('brand-text').textContent = $('home').title = data.settings.title || NAME;
+    document.title = data.settings.title ? data.settings.title + ' | ' + NAME : NAME;
     $('footer').textContent = data.settings.footer;
     $('footer').hidden = !data.settings.footer;
     if (!n) {
