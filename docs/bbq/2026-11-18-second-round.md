@@ -107,3 +107,24 @@ Nothing owed.
     saved. The tests used the same id, so they typed into the heading and passed. Fixed by renaming the box
     `s-header`; new checks fail on any repeated id and on a setup field that is not a real input.
   - The saved-time line in setup and the download warning stay: both still hold true. veto as above.
+- 2026-11-18: Chris asked, word for word: "When setting up a litebox for the first time it says clicking "refresh"
+  does the whole upload bit and then asks you if you want to download the new file. This occurs even though you
+  might still want to edit the other setup bits. I think we should update the button to say load/update photoes
+  (depends on whether there have already been photos loaded before), remove the download prompt after the refresh
+  occurs, but put a green check and timestamp next to the load/update button, and then only download when you
+  click download button. there could be a warning on modal dismissal if you haven't downloaded the new file yet."
+  - **R12 Load or Update.** The button reads "Load photos" while there are none, "Update photos" after. It only
+    reads the photos: no save or download prompt follows.
+  - **R13 Check and time.** A green check and the time the photos were loaded show beside that button.
+  - **R14 Save on the button only.** litebox.html is saved or downloaded only by the save button in setup.
+  - **R15 Warn on close.** Closing setup with photos or settings not yet saved or downloaded asks first.
+  - Defaulted: **the save button says "Download litebox.html" on Firefox and Safari, and "Save litebox.html" on
+    Chrome and Edge**, which write the file in place on the drive. veto: "Download" everywhere.
+  - Defaulted: **after saving, a green check and the time show beside the save button too**, and after a download
+    the copy-onto-the-drive instructions show below it. Any later change hides the check again. veto: no check there.
+  - Defaulted: **closing the browser tab with anything unsaved also warns** (the browser's own "leave page?" box), so
+    minutes of loading are not lost by accident. veto: warn on closing setup only.
+  - Defaulted: **the skipped-files list moved into setup**, under the Photos section, since the pop-up it lived in is
+    gone. veto: none needed.
+  - Defaulted: **"This copy of litebox.html was saved …" shows only when the open copy has a save time.** veto: also
+    say "not saved yet" on a new copy.

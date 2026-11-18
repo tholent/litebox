@@ -39,7 +39,7 @@
       '8 photos|1 photo|1 photo|1 photo|5 photos');
     ok('header counts albums and photos', text('meta') === '4 albums · 8 photos', text('meta'));
     ok('no Refresh or Settings anywhere on the page', !Array.from(document.querySelectorAll('button'))
-      .some((b) => b.offsetParent !== null && /refresh|setting/i.test(b.textContent)));
+      .some((b) => b.offsetParent !== null && /refresh|setting|load photos|update photos|download|save/i.test(b.textContent)));
     ok('footer hidden while the footer line is empty', $('footer').hidden);
     ok('header shows the logo', $('logo').complete && $('logo').naturalWidth === 84 && /^data:image\/png/.test($('logo').src));
     ok('header text and tab title default to litebox', text('brand-text') === 'litebox' && document.title === 'litebox',
@@ -170,7 +170,11 @@
     // --- hidden setup
     await nav('setup');
     ok('#setup opens the setup panel', visible('setup'));
-    ok('setup holds Refresh', visible('s-refresh') && /Refresh photos/.test(text('s-refresh')));
+    ok('setup offers "Update photos" once photos are in', visible('s-refresh') && text('s-refresh') === 'Update photos',
+      text('s-refresh'));
+    ok('setup shows a check and when the photos were loaded', visible('s-loaded') && /^\u2713 Loaded .+/.test(text('s-loaded')),
+      text('s-loaded'));
+    ok('setup lists the files litebox skipped', /3 files litebox can.t show/.test(text('s-skipped')), text('s-skipped'));
     ok('setup reports photos and albums', /8 photos in 4 albums/.test(text('s-photos')), text('s-photos'));
     const ids = Array.from(document.querySelectorAll('[id]')).map((e) => e.id);
     ok('every id on the page is used once', ids.length === new Set(ids).size,
@@ -205,7 +209,7 @@
       .getElementById('litebox-data').textContent);
     ok('a saved file carries the settings', savedBack.settings.title === 'Our family photos' &&
       savedBack.settings.footer === 'For Mum, with love' && savedBack.settings.showDates === false);
-    ok('setup says this file has not been saved yet', /not been saved/.test(text('s-saved')), text('s-saved'));
+    ok('no saved-time line for a copy never saved from setup', $('s-saved').hidden);
     const stampedSave = lb.stamped();
     const stampedBack = JSON.parse(new DOMParser().parseFromString(stampedSave.html, 'text/html')
       .getElementById('litebox-data').textContent);
@@ -231,7 +235,7 @@
     lb.load(stampedBack);
     ok('a reopened file shows its header text', text('brand-text') === 'Our family photos');
     await nav('setup');
-    ok('setup shows when the file was saved', /^This file was saved .+\.$/.test(text('s-saved')), text('s-saved'));
+    ok('setup shows when the file was saved', /^This copy of .+ was saved .+\.$/.test(text('s-saved')), text('s-saved'));
     ok('setup shows the saved header text', $('s-header').value === 'Our family photos', $('s-header').value);
     window.confirm = () => true;
     $('s-close').click();

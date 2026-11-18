@@ -118,6 +118,61 @@
     ok('saved file holds the new photo list', same(again.photos.map((p) => p.path), order));
     ok('saved file starts with a doctype', html.startsWith('<!doctype html>'));
 
+    // --- setup: Load photos only reads them; litebox.html is saved only by the save button
+    const $ = (id) => document.getElementById(id);
+    const text = (id) => $(id).textContent;
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    location.hash = '#setup';
+    await sleep(60);
+    ok('a new litebox offers "Load photos"', text('s-refresh') === 'Load photos', text('s-refresh'));
+    ok('no check mark before photos are loaded', $('s-loaded').hidden);
+    ok('Chrome and Edge get "Save" (in place)', text('s-save') === 'Save ' + location.pathname.split('/').pop(), text('s-save'));
+    await lb.refresh(picked);
+    ok('loading photos opens no save or download prompt', $('panel').hidden && !$('setup').hidden);
+    ok('a check and the time show by the button', !$('s-loaded').hidden && /^\u2713 Loaded .+/.test(text('s-loaded')),
+      text('s-loaded'));
+    ok('the button now says "Update photos"', text('s-refresh') === 'Update photos', text('s-refresh'));
+    ok('the gallery already shows the loaded photos', lb.data.photos.length === 8 && !$('albums').hidden);
+    ok('skipped files are listed in setup', /3 files litebox can.t show/.test(text('s-skipped')), text('s-skipped'));
+    ok('setup flags the loaded photos as not saved yet', $('s-dirty').classList.contains('err') &&
+      /photos you loaded/.test(text('s-dirty')), text('s-dirty'));
+    ok('nothing says saved yet', $('s-done').hidden && $('s-after').hidden);
+
+    const realConfirm = window.confirm;
+    let asked = 0;
+    window.confirm = () => { asked++; return false; };
+    $('s-close').click();
+    ok('closing setup before saving warns, and stays open when told to', asked === 1 && !$('setup').hidden);
+
+    // The download route, as on Firefox and Safari. Catch the download instead of saving a file.
+    window.showDirectoryPicker = undefined;
+    $('s-header').dispatchEvent(new Event('input', { bubbles: true }));
+    ok('other browsers get "Download"', /^Download /.test(text('s-save')), text('s-save'));
+    let grabbed = null;
+    document.addEventListener('click', (e) => {
+      if (e.target.download) { e.preventDefault(); grabbed = e.target.href; }
+    }, true);
+    $('s-save').click();
+    await sleep(20);
+    ok('the button downloads litebox.html', !!grabbed);
+    const got1 = grabbed ? JSON.parse(new DOMParser().parseFromString(await (await fetch(grabbed)).text(), 'text/html')
+      .getElementById('litebox-data').textContent) : null;
+    ok('the download holds the loaded photos and when it was saved', got1 && got1.photos.length === 8 && !!got1.saved,
+      got1 && got1.photos.length);
+    ok('after downloading: a check and the time by the button', !$('s-done').hidden &&
+      /^\u2713 Downloaded at .+/.test(text('s-done')), text('s-done'));
+    ok('after downloading: how to copy it onto the drive', !$('s-after').hidden && /replacing the old one/.test(text('s-after')));
+    ok('setup no longer flags anything unsaved', !$('s-dirty').classList.contains('err'));
+    $('s-footer').value = 'changed';
+    $('s-footer').dispatchEvent(new Event('input', { bubbles: true }));
+    ok('a later change hides the check again', $('s-done').hidden && $('s-dirty').classList.contains('err'));
+    $('s-footer').value = '';
+    $('s-footer').dispatchEvent(new Event('input', { bubbles: true }));
+    asked = 0;
+    $('s-close').click();
+    ok('closing after downloading does not warn', asked === 0 && $('setup').hidden);
+    window.confirm = realConfirm;
+
     const out = document.createElement('pre');
     out.id = 'lb-out';
     out.textContent = btoa(unescape(encodeURIComponent(html)));
