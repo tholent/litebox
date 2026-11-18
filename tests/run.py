@@ -44,6 +44,7 @@ import os
 import re
 import select
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -184,7 +185,8 @@ class DevTools:
                "--remote-debugging-pipe"] + CHROME_EXTRA + [url]
         # preexec_fn is the only way to put the pipe on the fixed fds 3 and 4 Chrome reads; no threads run here.
         self.proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
-                                     preexec_fn=place, pass_fds=(3, 4, hi_r, hi_w))  # noqa: PLW1509
+                                     preexec_fn=place, pass_fds=(3, 4, hi_r, hi_w),  # noqa: PLW1509
+                                     start_new_session=True)  # its own process group, so close() can end it all
         os.close(hi_r)
         os.close(hi_w)
         self.buf, self.next_id, self.session = b"", 0, None
@@ -212,8 +214,9 @@ class DevTools:
                 raise RuntimeError("chrome closed the connection")
             self.buf += chunk
 
-    def evaluate(self, expression):
-        r = self.call("Runtime.evaluate", {"expression": expression, "returnByValue": True})
+    def evaluate(self, expression, timeout=30):
+        # A page busy decoding big photos answers late: the caller says how long it may take.
+        r = self.call("Runtime.evaluate", {"expression": expression, "returnByValue": True}, timeout=timeout)
         return r.get("result", {}).get("value")
 
     def close(self):
@@ -224,6 +227,9 @@ class DevTools:
             self.proc.wait(timeout=10)
         except subprocess.TimeoutExpired:
             self.proc.kill()
+            self.proc.wait(timeout=10)
+        with contextlib.suppress(ProcessLookupError, PermissionError):
+            os.killpg(self.proc.pid, signal.SIGKILL)  # any helper process Chrome left behind
         for fd in (self.to_chrome, self.from_chrome):
             os.close(fd)
         return self.proc.stderr.read().decode(errors="replace") if self.proc.stderr else ""
@@ -244,8 +250,9 @@ def run_page(page: Path, timeout=180):
         chrome.session = chrome.call("Target.attachToTarget", {"targetId": target["targetId"], "flatten": True})[
             "sessionId"]
         while time.monotonic() - started < timeout:
-            if chrome.evaluate("!!document.getElementById('lb-results')"):
-                dom = chrome.evaluate("document.documentElement.outerHTML") or ""
+            left = max(1, timeout - (time.monotonic() - started))
+            if chrome.evaluate("!!document.getElementById('lb-results')", timeout=left):
+                dom = chrome.evaluate("document.documentElement.outerHTML", timeout=left) or ""
                 break
             time.sleep(0.25)
         else:

@@ -54,7 +54,7 @@ The request, word for word:
 - The linters have not been run: installing Node.js and ruff into the session's scratch folder was refused by the
   session's permission check. Run them locally, or let the first GitHub run show the results.
 - Neither workflow has run: nothing has been pushed (push only with Chris's approval).
-- Screenshots with real photos for the README, if Chris has some he is happy to publish.
+- Screenshots with real photos for the README, if Chris has some he is happy to publish. Done 2026-11-18: see below.
 
 ## Remote
 
@@ -97,3 +97,20 @@ The request, word for word:
   `pitmaster.md` names it (`checklist:`) for setfree. Defaulted: **every release is made as a draft, checked, then
   published**, since a published release can no longer be fixed. veto: publish straight away, as v0.1.0 was.
   v0.1.0 itself was published before the setting and is not immutable (`isImmutable: false`).
+- Chris asked, word for word: "I have placed a zip file of sample images in the root of this repository. Please
+  decompress them to a place that makes sense and use them to generate screenshots".
+  - `samples.zip` held 24 Pexels photos in four albums (concert, family, farm, food), plus macOS `__MACOSX/` and
+    `.DS_Store` files, which were left out. They are extracted to `samples/drive/photos/`, laid out as a real litebox
+    drive.
+  - Defaulted: **the photos are not committed**: `samples/` and `samples.zip` are in `.gitignore`. They are 68 MB,
+    and the Pexels license does not cover passing the photos on as files. Only the screenshots (`docs/images/`,
+    about 480 KB) are committed, and the README credits Pexels and its contributors. veto: commit the photos.
+  - Defaulted: **the screenshots' header text "Our photos" and footer "Sample photos from Pexels"**, dates off (the
+    photos have no date taken), newest first. veto: other wording (taste).
+  - `tests/readme-screenshots.py` makes them: it loads the drive's photos into a fresh `litebox.html` with litebox's
+    own code, then captures the album grid, the viewer with details, setup, and a phone view.
+  - Found on the way: with 20-megapixel photos, run.py's 30-second limit on each poll of the page could expire while
+    the page was busy. Each poll may now take as long as the page is allowed, and Chrome runs in its own process
+    group, ended entirely when the page is done.
+  - Noticed, for Chris: the "All photos" tile's cover is the newest photo overall, so it always repeats one album's
+    cover (here, food's). A different cover for "All photos" would be a design change.

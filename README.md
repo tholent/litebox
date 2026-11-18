@@ -27,7 +27,11 @@ install, no account and no internet connection.
 litebox is made for family archives, scanned slides and photo gifts: one person sets the drive up, and the
 person who receives it just looks at the photos.
 
+![The album grid: one tile per folder, with the header text and footer line set up for this drive](docs/images/albums.jpg)
+
 ## What it does
+
+<img src="docs/images/phone.jpg" alt="litebox on a phone" width="240" align="right">
 
 - **Albums from folders.** Each folder inside `photos` becomes an album, and photos outside any folder go into
   "Unsorted".
@@ -73,10 +77,14 @@ person who receives it just looks at the photos.
      the new one `litebox (1).html` or similar: copy the newest one, and name it `litebox.html`.
 7. **Hand it over.** People viewing the drive never see the setup page.
 
+![The setup page: load or update the photos, then the header text, footer line, order, dates and slideshow speed](docs/images/setup.jpg)
+
 **Adding photos later:** put them in the `photos` folder, open `litebox.html`, add `#setup` to the end of the
 address in the browser's address bar, click **Update photos**, and save again.
 
 ## Looking at the photos
+
+![A photo in the viewer, with its details panel open](docs/images/viewer.jpg)
 
 | To                          | Do this                                       |
 | --------------------------- | --------------------------------------------- |
@@ -110,7 +118,13 @@ and open it in a browser.
   inside `litebox.html`), and `python3 tests/check-headers.py` for license headers.
 - **The logo:** `assets/logo.png` is the source. `python3 assets/make-logo.py` prints the copies embedded in
   `litebox.html`.
+- **The screenshots:** `python3 tests/readme-screenshots.py <drive>` loads a drive's `photos` folder into a fresh
+  `litebox.html` with litebox's own code and saves the README's screenshots to `docs/images/`.
 
 ## License
 
 litebox is licensed under the [Apache License, Version 2.0](LICENSE).
+
+The photos in the screenshots come from [Pexels](https://www.pexels.com), free to use under the
+[Pexels license](https://www.pexels.com/license/), by these Pexels contributors: aayushrawat, anthony-dalesandro, beyza-yalcin, daniel-droscher, djavvadi, filip-sestrenek, introspectivedsgn, jonathanborba, kamrujjamanjewel, krishna-kids-photography, luis-yanez, marius-gabriel, mographe, nazila, planka, rebornfilmes, safari-consoler, soldiervip, tin-stanton, vo-van-ti-n, and one unnamed contributor. They are not part
+of this repository.
