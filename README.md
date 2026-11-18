@@ -15,6 +15,7 @@
   <a href="https://github.com/tholent/litebox/actions/workflows/lint.yml"><img src="https://github.com/tholent/litebox/actions/workflows/lint.yml/badge.svg" alt="Lint"></a>
   <a href="https://github.com/tholent/litebox/actions/workflows/test.yml"><img src="https://github.com/tholent/litebox/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
+  <a href="https://github.com/MapleSyrupOS/pitmaster"><img src="https://img.shields.io/badge/AI_framework-pitmaster-yellow" alt="AI framework: pitmaster"></a>
 </p>
 
 ---
