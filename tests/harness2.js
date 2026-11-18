@@ -197,6 +197,8 @@
     $('s-footer').value = 'For Mum, with love';
     $('s-footer').dispatchEvent(new Event('input', { bubbles: true }));
     ok('footer line shows straight away', !$('footer').hidden && text('footer') === 'For Mum, with love');
+    ok('the footer sticks to the bottom of the window', getComputedStyle($('footer')).position === 'sticky' &&
+      getComputedStyle($('footer')).bottom === '0px');
     $('s-dates').checked = false;
     $('s-dates').dispatchEvent(new Event('change', { bubbles: true }));
     $('s-seconds').value = '8';

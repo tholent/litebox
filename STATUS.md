@@ -12,7 +12,7 @@ The project's live state. Update it when work lands. Every claim cites at least 
 - Second round built: albums from top-level folders (album grid first), search, optional dates, footer line, slideshow speed slider, an EXIF details panel, and setup with Refresh hidden behind `#setup` (`litebox.html`, `docs/bbq/2026-11-18-second-round.md`).
 - Logo in the header bar and as the tab icon, embedded in the page; a Header text setting in setup (`assets/logo.png`, `docs/bbq/2026-11-18-second-round.md`).
 - Setup reworked: "Load photos" / "Update photos" only reads them and shows a green check with the time; litebox.html is saved or downloaded only by its own button, and closing setup or the tab with anything unsaved warns first (`litebox.html`, `docs/bbq/2026-11-18-second-round.md`).
-- Automated tests pass in headless Chromium: 141 checks, run with `python3 tests/run.py` (`tests/run.py`).
+- Automated tests pass in headless Chromium: 142 checks, run with `python3 tests/run.py` (`tests/run.py`).
 
 ## Next
 

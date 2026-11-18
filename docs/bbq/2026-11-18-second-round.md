@@ -128,3 +128,6 @@ Nothing owed.
     gone. veto: none needed.
   - Defaulted: **"This copy of litebox.html was saved …" shows only when the open copy has a save time.** veto: also
     say "not saved yet" on a new copy.
+- 2026-11-18: Chris asked, word for word: "let's make the footer sticky".
+  - **R16 Sticky footer.** The footer line stays at the bottom of the window while the photos scroll, with the
+    header bar's see-through dark background. It still shows only when a footer line is set.
