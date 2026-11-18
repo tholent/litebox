@@ -159,11 +159,15 @@ def chromium(args):
 
 
 def run_page(page: Path):
-    r = chromium(["--virtual-time-budget=60000", "--window-size=1280,800", "--dump-dom", page.as_uri()])
+    # The budget is simulated time, which runs ahead whenever the page is idle; a slow machine can spend a lot of
+    # it while photos decode, so it is generous. Finishing early costs nothing.
+    started = time.monotonic()
+    r = chromium(["--virtual-time-budget=600000", "--window-size=1280,800", "--dump-dom", page.as_uri()])
     m = re.search(r'<pre id="lb-results">(.*?)</pre>', r.stdout, re.DOTALL)
     if not m:
+        took = f"chrome exit {r.returncode} after {time.monotonic() - started:.1f} s, {len(r.stdout)} bytes of page; "
         return [{"name": "harness finished (" + page.name + ")", "ok": False,
-                 "info": (r.stderr or r.stdout)[-600:]}], r.stdout
+                 "info": took + (r.stderr or r.stdout)[-400:]}], r.stdout
     return json.loads(html.unescape(m.group(1))), r.stdout
 
 
