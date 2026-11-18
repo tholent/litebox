@@ -1,6 +1,8 @@
 ---
-status: proposed
-status-note: drafted 2026-11-18 from Chris's answers; awaiting ratification
+status: accepted
+status-note: ratified by Chris on 2026-11-18
+ratified-by: Chris
+ratified-on: "2026-11-18"
 owner: Chris
 kind: process
 built: landed
@@ -36,3 +38,4 @@ shows what it needs.
 ## History
 
 - 2026-11-18: drafted by makeadr (light route) from Chris's answers during project-prep.
+- 2026-11-18: ratified by Chris ("ratify adr001"). Header before: `status: proposed`; `status-note: drafted 2026-11-18 from Chris's answers; awaiting ratification`.

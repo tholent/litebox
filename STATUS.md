@@ -7,19 +7,19 @@ The project's live state. Update it when work lands. Every claim cites at least 
 ## Now
 
 - Project prepared for agents with project-prep: the rules are in `AGENTS.md`.
-- First decision drafted, awaiting Chris's ratification (`docs/decisions/ADR-001-set-up-litebox-with-the-smallest-agent-setup.md`).
+- First decision ratified: the smallest agent setup (`docs/decisions/ADR-001-set-up-litebox-with-the-smallest-agent-setup.md`).
 
 ## Next
 
-- Ratify or change ADR-001 (`docs/decisions/ADR-001-set-up-litebox-with-the-smallest-agent-setup.md`).
+- Plan the first piece of work on the gallery itself; nothing is queued yet (`AGENTS.md`).
 
 ## Known debt
 
-- ADR-001 is proposed, not yet ratified (`docs/decisions/INDEX.md`).
+- The Plain words rules offer to file terms in a glossary, but `docs/glossary.md` does not exist yet (`AGENTS.md`).
 
 ## Log
 
-- 2026-11-18: prepared with project-prep; ADR-001 drafted with makeadr.
+- 2026-11-18: prepared with project-prep; ADR-001 drafted with makeadr and ratified by Chris.
 
 ## How this file is kept
 
