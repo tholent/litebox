@@ -19,6 +19,7 @@ The project's live state. Update it when work lands. Every claim cites at least 
 
 ## Next
 
+- Chris to rule on ADR-002, draft-first releases (proposed) (`docs/decisions/ADR-002-make-each-release-as-a-checked-draft-before-publishing.md`).
 - Try v0.1.0 on a real USB stick on Windows and macOS (Chrome and Safari), the one check the blind review asked for that no test covers (`docs/bbq/2026-11-18-release-prep.md`).
 - Chris to try the second round on the 231 real images: open `litebox.html#setup`, Load photos, set the header text, footer and dates, Download, then view it as a recipient would (`litebox.html`).
 

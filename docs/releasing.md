@@ -1,6 +1,7 @@
 # Releasing litebox
 
 The steps for making a release, in order. The `setfree` skill reads this file (`checklist:` in `pitmaster.md`).
+Decided by `docs/decisions/ADR-002-make-each-release-as-a-checked-draft-before-publishing.md`.
 
 **Releases are permanent.** Release immutability is on for `tholent/litebox`: once a release is published, its
 tag cannot be moved or deleted, and its attached `litebox.html` cannot be replaced or removed. A mistake in a
