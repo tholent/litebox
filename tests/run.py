@@ -183,8 +183,8 @@ class DevTools:
                "--allow-file-access-from-files", "--hide-scrollbars", "--window-size=1280,800",
                "--remote-debugging-pipe"] + CHROME_EXTRA + [url]
         # preexec_fn is the only way to put the pipe on the fixed fds 3 and 4 Chrome reads; no threads run here.
-        self.proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,  # noqa: PLW1509
-                                     stderr=subprocess.PIPE, preexec_fn=place, pass_fds=(3, 4, hi_r, hi_w))
+        self.proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                                     preexec_fn=place, pass_fds=(3, 4, hi_r, hi_w))  # noqa: PLW1509
         os.close(hi_r)
         os.close(hi_w)
         self.buf, self.next_id, self.session = b"", 0, None
