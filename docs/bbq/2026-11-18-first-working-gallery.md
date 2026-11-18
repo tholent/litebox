@@ -74,3 +74,8 @@ On this Raspberry Pi 5 in headless Chromium (2026-11-18): refresh read 150 photo
 41 s, about 0.27 s a photo. Thumbnails came to about 14–16 KB each on these noisy test images, not the 10 KB Q8
 guessed, so a 3,000-photo `litebox.html` is about 49 MB; it opened to a drawn grid in 3.7 s, against 2.4 s for an
 empty litebox. A typical laptop should be several times faster; not measured.
+
+## Later changes
+
+- 2026-11-18: Q5 reversed (folders become albums) and setup hidden behind `#setup`; see
+  `docs/bbq/2026-11-18-second-round.md`.

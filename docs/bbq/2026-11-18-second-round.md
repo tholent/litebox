@@ -1,0 +1,68 @@
+# Second round — albums, search, hidden setup, info panel
+
+2026-11-18 · untyped · discussion, not a numbered bbq · lead: this session (Claude Opus 5.5), no workers
+
+Follows `docs/bbq/2026-11-18-first-working-gallery.md`. Chris tried the first gallery with 231 real images ("it
+works mostly as expected") and asked for these changes.
+
+## Chris's words
+
+The request, word for word:
+
+> - search box (searches descriptions/titles/tags)
+> - display of folders (1 level ) as albums
+> - make capture date display optional (these are mostly scans and the capture date is meaningless)
+> - custom footer line
+> - slideshow adjust time slider
+> - info panel on picture (toggle to show exif info)
+> - refresh button on footer bar (refresh is only really used to create the thumbdrive and then hidden)
+> - "changed on disk" badge for images that changed on disk since a refresh
+
+The rulings on the open questions, word for word:
+
+> 1. let's drop the titles and tags bit
+> 2. unsorted is good. album grid for initial view
+> 3. Let's put refresh in the settings tab, but we also need to make the settings kind of hidden so that endusers
+>    don't use it. this software is meant to be setup by someone and then just viewed by the recipient. I don't
+>    want anyone monkeying around with the settings after the initial load
+> 4. drop it
+
+## Rules
+
+- **R1 Search.** A search box filters photos as you type, by description. No titles or tags (ruling 1).
+- **R2 Albums.** Each top-level folder in `photos/` is an album; deeper folders roll up into it. Photos directly in
+  `photos/` go in an album called "Unsorted". The opening view is the album grid (ruling 2). This reverses the
+  first round's Q5 ("Not in: folders as albums").
+- **R3 Dates optional.** A setting hides the date in captions and the info panel.
+- **R4 Footer line.** A setting holds one line of text shown in a footer bar.
+- **R5 Slideshow speed.** A slider in the viewer sets the seconds per photo while the slideshow runs.
+- **R6 Info panel.** A toggle in the viewer shows the photo's EXIF details, read at refresh.
+- **R7 Setup is hidden.** Refresh lives in the settings, and the settings are hidden from the people who view the
+  gallery: litebox is set up by one person and then only viewed by the recipient (ruling 3).
+- **R8 No changed-on-disk badge** (ruling 4).
+
+## Defaulted
+
+- **Setup is reached by adding `#setup` to the address.** No button for it shows anywhere, except on a new litebox
+  with no photos yet, whose empty page offers "Set up litebox" to the person setting it up. This keeps out casual
+  clicking, not a determined person: anyone can edit the file in a text editor. veto: a key combination instead.
+- **Settings are saved inside `litebox.html`**, beside the photo list, the same way Refresh saves (in place on
+  Chrome/Edge, by download elsewhere). veto: none without a second file on the drive.
+- **Search also matches file names and album names**, and searches the album you are in, or every photo from the
+  album grid. veto: descriptions only.
+- **No subfolders at all:** the album grid is skipped and the photos show straight away. veto: always show the
+  album grid, even with only "Unsorted".
+- **Albums are sorted by name** (numbers in order: "2" before "10"), "Unsorted" last; each album's cover is its
+  newest photo. veto: another order or cover.
+- **"Hide dates" hides both the date taken and the file date.** veto: hide only the date taken.
+- **Slider range 2–20 seconds**, starting at the setting's default (5 s); each viewer's browser remembers its last
+  choice. veto: another range, or no remembering.
+- **Info panel fields:** file name, album, pixel size, file size, camera or scanner make and model, lens, exposure,
+  aperture, ISO, focal length, resolution (DPI), software, artist, copyright, and the date unless dates are hidden.
+  Toggled with an ⓘ button or the I key; it shows only the fields a photo has. veto: fewer or other fields.
+- **Old litebox files keep working:** a file refreshed before this change has no info fields until it is refreshed
+  again, and gets the default settings.
+
+## Owed
+
+Nothing owed.
