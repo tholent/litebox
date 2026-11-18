@@ -90,3 +90,12 @@ Nothing owed.
   - The missing header text did not reproduce here (Chromium 156 and Firefox 159, 360 to 1280 px wide, album grid
     and inside an album). The bar no longer lets anything squeeze the header text narrower than the text itself,
     and a test checks it is drawn at full width. Which browser Chris saw it in is owed.
+- 2026-11-18: Chris reported, word for word: "when I use the setup form to enter the header text it doesn't appear to
+  save the same way the footer text does. I click save, download the new file, replace it, but the header continues
+  to display the placeholder text (litebox). When I enter setup again the header text is not there anymore".
+  - Checked: the file setup builds carries the header text beside the footer, in Chromium 156 and Firefox 159. The
+    likely cause is the download's name: with a `litebox.html` already in the downloads folder, browsers save the
+    new one as "litebox (1).html" (Safari: "litebox 2.html"), and copying "litebox.html" puts an older save back.
+    Not confirmed with Chris yet.
+  - Defaulted: **every saved file carries when it was saved, and setup shows it** ("This file was saved …"), so an
+    old copy is easy to spot; the download message warns about the renaming. veto: drop the saved line.

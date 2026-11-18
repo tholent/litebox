@@ -11,7 +11,7 @@ The project's live state. Update it when work lands. Every claim cites at least 
 - First working gallery built to the bbq's rules: grid, viewer, captions with EXIF date and description, slideshow, and a Refresh that rebuilds the file's own photo list and thumbnails (`litebox.html`, `docs/bbq/2026-11-18-first-working-gallery.md`).
 - Second round built: albums from top-level folders (album grid first), search, optional dates, footer line, slideshow speed slider, an EXIF details panel, and setup with Refresh hidden behind `#setup` (`litebox.html`, `docs/bbq/2026-11-18-second-round.md`).
 - Logo in the header bar and as the tab icon, embedded in the page; a Header text setting in setup (`assets/logo.png`, `docs/bbq/2026-11-18-second-round.md`).
-- Automated tests pass in headless Chromium: 113 checks, run with `python3 tests/run.py` (`tests/run.py`).
+- Automated tests pass in headless Chromium: 118 checks, run with `python3 tests/run.py` (`tests/run.py`).
 
 ## Next
 

@@ -239,6 +239,7 @@ button, input { font: inherit; color: inherit; }
     <label class="check"><input type="checkbox" id="s-dates"> Show dates</label>
     <label>Slideshow: <input type="number" id="s-seconds" min="2" max="20" step="1"> seconds per photo</label>
     <h3>Save</h3>
+    <p id="s-saved"></p>
     <p class="small" id="s-dirty">Changes here show straight away, but are kept only once saved into litebox.html.</p>
     <div class="actions">
       <button class="btn" id="s-close" type="button">Close</button>
@@ -326,6 +327,10 @@ button, input { font: inherit; color: inherit; }
   function parseLocal(s) {
     const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(s || '');
     return m ? new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6]) : null;
+  }
+  function fmtSaved(iso) {
+    const d = new Date(iso);
+    return fmtDay(d) + ' at ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
   }
   function fmtDay(d) {
     return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
@@ -964,6 +969,8 @@ button, input { font: inherit; color: inherit; }
     if (location.hash === '#setup') history.replaceState(null, '', location.pathname + location.search + viewHash(album));
   }
   function showDirty() {
+    $('s-saved').textContent = data.saved ? 'This file was saved ' + fmtSaved(data.saved) + '.'
+      : 'This file has not been saved from setup yet.';
     $('s-dirty').textContent = dirty()
       ? 'Not saved yet: these changes show now, but are kept only once saved into ' + PAGE_NAME + '.'
       : 'Changes here show straight away, but are kept only once saved into ' + PAGE_NAME + '.';
@@ -1038,10 +1045,23 @@ button, input { font: inherit; color: inherit; }
     await w.close();
   }
 
-  // Saves html into this litebox file where the browser allows it; otherwise offers a download.
-  async function saveHtml(html, what) {
+  // The page as it will be saved, carrying the moment it was saved (setup shows it, so the person setting up
+  // can tell an old copy of litebox.html from the one they just saved).
+  function stamped() {
+    const at = new Date().toISOString();
+    return { at, html: makeHtml(Object.assign({}, data, { saved: at })) };
+  }
+  function markSaved(at) {
+    data.saved = at;
+    saved = JSON.stringify(data.settings);
+    showDirty();
+  }
+
+  // Saves into this litebox file where the browser allows it; otherwise offers a download.
+  async function saveHtml(save, what) {
+    const html = save.html;
     if (fileHandle) {
-      try { await writeTo(fileHandle, html); return finishSaved(html, what); } catch (e) { fileHandle = null; }
+      try { await writeTo(fileHandle, html); return finishSaved(save, what); } catch (e) { fileHandle = null; }
     }
     if (window.showDirectoryPicker && !preferInput) {
       let dir = null;
@@ -1050,33 +1070,35 @@ button, input { font: inherit; color: inherit; }
       if (dir) {
         const h = await childNamed(dir, PAGE_NAME, 'file').catch(() => null);
         if (h) {
-          try { await writeTo(h, html); fileHandle = h; return finishSaved(html, what); } catch (e) { /* download */ }
+          try { await writeTo(h, html); fileHandle = h; return finishSaved(save, what); } catch (e) { /* download */ }
         }
       }
     }
-    offerDownload(html, what);
+    offerDownload(save, what);
   }
-  function finishSaved(html, what) {
-    saved = JSON.stringify(data.settings);
-    showDirty();
-    panel('Saved', [what + ' Saved into ' + PAGE_NAME + ' (' + fmtSize(new Blob([html]).size) + ').'],
+  function finishSaved(save, what) {
+    markSaved(save.at);
+    panel('Saved', [what + ' Saved into ' + PAGE_NAME + ' (' + fmtSize(new Blob([save.html]).size) + ').'],
       [['Done', closePanel, true]]);
   }
-  function offerDownload(html, what) {
+  function offerDownload(save, what) {
     panel('One more step', [
-      what + ' Your browser saves the updated ' + PAGE_NAME + ' (' + fmtSize(new Blob([html]).size) + ') to your ' +
+      what + ' Your browser saves the updated ' + PAGE_NAME + ' (' + fmtSize(new Blob([save.html]).size) + ') to your ' +
       'downloads. Copy it onto the drive next to the photos folder, replacing the old one.',
+      el('p', { className: 'small' }, 'If your downloads already hold a ' + PAGE_NAME + ', your browser may name ' +
+        'this one “' + PAGE_NAME.replace(/\.html?$/i, '') + ' (1).html” or similar. Copy the newest one, and name it ' +
+        PAGE_NAME + ' on the drive. To check, open setup: it shows when the file was saved (' + fmtSaved(save.at) + ').'),
     ], [['Close', closePanel], ['Download ' + PAGE_NAME, () => {
-      download(html);
-      saved = JSON.stringify(data.settings);
-      showDirty();
-      showNotice('Remember to copy the downloaded ' + PAGE_NAME + ' onto the drive, replacing the old one.');
+      download(save.html);
+      markSaved(save.at);
+      showNotice('Remember to copy the downloaded ' + PAGE_NAME + ' onto the drive, replacing the old one. ' +
+        'Its setup will say it was saved ' + fmtSaved(save.at) + '.');
     }, true]]);
   }
 
   function saveSettings() {
     panel('Saving…', ['Choose the folder that holds ' + PAGE_NAME + ' if your browser asks.'], []);
-    saveHtml(makeHtml(data), 'Settings saved.');
+    saveHtml(stamped(), 'Settings saved.');
   }
 
   async function chooseFolder() {
@@ -1144,8 +1166,8 @@ button, input { font: inherit; color: inherit; }
     render();
     openSetup();
     const found = 'Found ' + plural(data.photos.length, 'photo', 'photos') + '.';
-    if (fileHandle) await saveHtml(makeHtml(data), found);
-    else offerDownload(makeHtml(data), found);
+    if (fileHandle) await saveHtml(stamped(), found);
+    else offerDownload(stamped(), found);
     skippedList(data.skipped);
   }
 
@@ -1159,7 +1181,7 @@ button, input { font: inherit; color: inherit; }
   function showNotice(text) { $('notice').textContent = text; $('notice').hidden = false; }
 
   Object.assign(lb, {
-    readExif, cleanDescription, buildIndex, makeHtml, entriesFromPicked, render,
+    readExif, cleanDescription, buildIndex, makeHtml, stamped, entriesFromPicked, render,
     open: openViewer, close: closeViewer, next: () => go(1), prev: () => go(-1), play: startShow, stop: stopShow,
     load(d) { data = normalise(d); album = null; render(); },
   });

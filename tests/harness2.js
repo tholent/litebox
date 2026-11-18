@@ -200,6 +200,12 @@
       .getElementById('litebox-data').textContent);
     ok('a saved file carries the settings', savedBack.settings.title === 'Our family photos' &&
       savedBack.settings.footer === 'For Mum, with love' && savedBack.settings.showDates === false);
+    ok('setup says this file has not been saved yet', /not been saved/.test(text('s-saved')), text('s-saved'));
+    const stampedSave = lb.stamped();
+    const stampedBack = JSON.parse(new DOMParser().parseFromString(stampedSave.html, 'text/html')
+      .getElementById('litebox-data').textContent);
+    ok('the file setup saves carries the header text and when it was saved',
+      stampedBack.settings.title === 'Our family photos' && stampedBack.saved === stampedSave.at, stampedBack.settings);
     const realConfirm = window.confirm;
     let asked = false;
     window.confirm = () => { asked = true; return true; };
@@ -215,6 +221,16 @@
     ok('dates hidden from details', !('Taken' in infoRows()) && !('File date' in infoRows()), infoRows());
     key('i');
     key('Escape');
+
+    // --- reopening a saved file: its header text shows, and setup says when it was saved
+    lb.load(stampedBack);
+    ok('a reopened file shows its header text', text('brand-text') === 'Our family photos');
+    await nav('setup');
+    ok('setup shows when the file was saved', /^This file was saved .+\.$/.test(text('s-saved')), text('s-saved'));
+    ok('setup shows the saved header text', $('s-title').value === 'Our family photos', $('s-title').value);
+    window.confirm = () => true;
+    $('s-close').click();
+    window.confirm = realConfirm;
 
     // --- a drive with no subfolders skips the album grid
     const flat = JSON.parse(JSON.stringify(lb.data));
