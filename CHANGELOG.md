@@ -2,7 +2,7 @@
 
 What changed in each release of litebox. Dates are the day the release was made.
 
-## Unreleased
+## 0.2.0 — 2026-11-22
 
 - Setup has an **Order** choice: newest first, as before, or by folder and file name, which suits scans whose
   dates mean nothing. It is saved inside `litebox.html` with the other settings.

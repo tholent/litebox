@@ -64,8 +64,8 @@ cat >> /tmp/litebox-notes.md <<'NOTES'
 
 ### Getting started
 
-Download `litebox.html` below, put it on a drive next to a folder called `photos`, open it in your browser and
-click **Set up litebox**. The [README](https://github.com/tholent/litebox#make-a-litebox-drive) walks through
+Download `litebox.html` below, put it on a drive next to a folder of photos (any name; `photos` is a good one),
+open it in your browser and click **Set up litebox**. The [README](https://github.com/tholent/litebox#make-a-litebox-drive) walks through
 every step.
 
 ### Checking your download
