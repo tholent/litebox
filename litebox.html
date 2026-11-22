@@ -268,6 +268,7 @@ button, input { font: inherit; color: inherit; }
     </label>
     <label>Order:<select id="s-order">
         <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
         <option value="name">By folder and file name</option>
       </select></label>
     <label class="check"><input type="checkbox" id="s-dates"> Show dates</label>
@@ -403,8 +404,16 @@ button, input { font: inherit; color: inherit; }
   }
   const albumName = (key) => (key === UNSORTED ? 'Unsorted' : key);
   const byName = (a, b) => a.path.localeCompare(b.path, undefined, { numeric: true, sensitivity: 'base' });
-  // Every photo in the order setup chose: newest first (the order Refresh stores), or by folder and file name.
-  const ordered = () => (data.settings.order === 'name' ? data.photos.slice().sort(byName) : data.photos);
+  // Photos taken at the same moment stay in name order, as they do newest first.
+  const byOldest = (a, b) => (a.taken < b.taken ? -1 : a.taken > b.taken ? 1 : a.path.localeCompare(b.path));
+  const ORDERS = new Map([['oldest', byOldest], ['name', byName]]);
+  const orderOf = (v) => (ORDERS.has(v) ? v : 'newest');
+  // Every photo in the order setup chose: newest first (the order Refresh stores), oldest first, or by folder and
+  // file name.
+  const ordered = () => {
+    const by = ORDERS.get(data.settings.order);
+    return by ? data.photos.slice().sort(by) : data.photos;
+  };
   function albumList() {
     const map = new Map();
     for (const p of ordered()) {
@@ -1012,7 +1021,7 @@ button, input { font: inherit; color: inherit; }
     $('s-footer').value = s.footer;
     $('s-dates').checked = !!s.showDates;
     $('s-seconds').value = s.slideSeconds;
-    $('s-order').value = s.order === 'name' ? 'name' : 'newest';
+    $('s-order').value = orderOf(s.order);
     skippedList(data.skipped);
     showDirty();
     checkWhere();
@@ -1081,7 +1090,7 @@ button, input { font: inherit; color: inherit; }
       footer: $('s-footer').value.trim(),
       showDates: $('s-dates').checked,
       slideSeconds: secs >= 2 && secs <= 20 ? secs : data.settings.slideSeconds,
-      order: $('s-order').value === 'name' ? 'name' : 'newest',
+      order: orderOf($('s-order').value),
     };
     lb.slideMs = data.settings.slideSeconds * 1000;
     render();

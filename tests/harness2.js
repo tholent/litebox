@@ -226,6 +226,13 @@
     $('s-order').value = 'newest';
     $('s-order').dispatchEvent(new Event('change', { bubbles: true }));
     ok('"Newest first" puts them back', names()[0] === 'h #1 & more.jpg' && names()[1] === 'b-rotated.jpg', names());
+    ok('setup offers three orders, Oldest first second', Array.from($('s-order').options).map((o) => o.textContent)
+      .join('|') === 'Newest first|Oldest first|By folder and file name');
+    $('s-order').value = 'oldest';
+    $('s-order').dispatchEvent(new Event('change', { bubbles: true }));
+    ok('"Oldest first" reorders the album straight away', JSON.stringify(names()) === JSON.stringify(
+      ['e.jpg', 'd.webp', 'c.png', 'b-rotated.jpg', 'h #1 & more.jpg']), names());
+    ok('"Oldest first" lands in the data that gets saved', lb.data.settings.order === 'oldest', lb.data.settings);
     $('s-order').value = 'name';
     $('s-order').dispatchEvent(new Event('change', { bubbles: true }));
     $('s-dates').checked = false;
@@ -292,6 +299,29 @@
     $('s-close').click();
     window.confirm = realConfirm;
 
+    // --- a reopened file set to Oldest first: the album list stays in name order, the photos go oldest first
+    const oldest = JSON.parse(JSON.stringify(stampedBack));
+    oldest.settings.order = 'oldest';
+    lb.load(JSON.parse(new DOMParser().parseFromString(lb.makeHtml(oldest), 'text/html')
+      .getElementById('litebox-data').textContent));
+    await nav('');
+    ok('a reopened file keeps "Oldest first"', lb.data.settings.order === 'oldest' &&
+      JSON.stringify(lb.list.map((p) => p.path.split('/').pop())) === JSON.stringify(['scan-001.jpg', 'e.jpg', 'd.webp',
+        'a.jpg', 'c.png', 'b-rotated.jpg', 'h #1 & more.jpg', 'm.jpg']), lb.list.map((p) => p.path));
+    ok('"Oldest first" leaves the album list in name order',
+      JSON.stringify(albumNames()) === JSON.stringify(['All photos', '2 misc', '10 scans', '2021 lake', 'Unsorted']),
+      albumNames());
+    ok('the All photos cover is the oldest photo', $('albums').querySelector('img').src === lb.list[0].thumb);
+    await nav('setup');
+    ok('setup shows the saved "Oldest first"', $('s-order').value === 'oldest', $('s-order').value);
+    $('s-close').click();
+    const unknown = JSON.parse(JSON.stringify(oldest));
+    unknown.settings.order = 'constructor';
+    lb.load(unknown);
+    ok('an order litebox does not know falls back to Newest first',
+      lb.list[0].path.endsWith('m.jpg') && lb.list[7].path.endsWith('scan-001.jpg'), lb.list.map((p) => p.path));
+    lb.load(oldest);
+
     // --- a drive with no subfolders skips the album grid
     const flat = JSON.parse(JSON.stringify(lb.data));
     flat.photos = flat.photos.filter((p) => p.path.split('/').length === 2);
@@ -299,6 +329,15 @@
     await nav('');
     ok('no subfolders: photos show straight away', visible('grid') && $('albums').hidden && $('grid').children.length === 5);
     ok('no subfolders: no back link or album title', $('back').hidden && text('title') === '');
+
+    // --- photos taken at the same moment stay in name order, oldest first as newest first
+    const tied = JSON.parse(JSON.stringify(flat));
+    for (const p of tied.photos) p.taken = '2020-01-01T00:00:00';
+    tied.photos.reverse();
+    lb.load(tied);
+    const tiedNames = () => lb.list.map((p) => p.path.split('/').pop());
+    ok('same moment, Oldest first: name order', JSON.stringify(tiedNames()) === JSON.stringify(
+      ['b-rotated.jpg', 'c.png', 'd.webp', 'e.jpg', 'h #1 & more.jpg']), tiedNames());
   } catch (err) {
     ok('harness 2 ran without errors', false, String((err && err.stack) || err));
   }

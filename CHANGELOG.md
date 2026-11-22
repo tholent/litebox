@@ -2,6 +2,11 @@
 
 What changed in each release of litebox. Dates are the day the release was made.
 
+## Unreleased
+
+- Setup's **Order** choice has a third option, **Oldest first**. Albums stay in name order; the photos
+  inside them, and in All photos, go from the oldest to the newest.
+
 ## 0.2.0 — 2026-11-22
 
 - Setup has an **Order** choice: newest first, as before, or by folder and file name, which suits scans whose

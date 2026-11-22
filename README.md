@@ -41,7 +41,7 @@ person who receives it just looks at the photos.
   and the date it was taken. Dates can be turned off, which helps with scans whose dates mean nothing.
 - **A details panel** for each photo: camera or scanner, lens, exposure, resolution, artist, copyright.
 - **Search** across descriptions, file names and album names.
-- **Your order:** newest first, or by folder and file name, which suits numbered scans.
+- **Your order:** newest first, oldest first, or by folder and file name, which suits numbered scans.
 - **Your own words:** a header text at the top, and a footer line such as "For Mum, with love, Christmas 2026".
 - **Made for any modern browser, offline:** Chrome, Edge, Firefox and Safari on Windows, Mac and Linux.
 - **Leaves your photos alone.** litebox only reads them. It never changes, moves or renames a photo, and never
