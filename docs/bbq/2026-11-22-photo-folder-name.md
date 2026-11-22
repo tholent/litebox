@@ -52,3 +52,12 @@ Nothing owed.
 Build these rules in `litebox.html`, update the empty page, README, tests and CHANGELOG, run
 `python3 tests/run.py` and `ruff`/ESLint, and commit on `main` (no push without Chris). Lead: Claude Opus 5.5 at its
 usual effort; a session on another model or effort stops and says so before doing anything.
+
+## Built
+
+2026-11-22, in the same session, committed on `main`: `photoEntries` and `loadPicked` take the place of the
+`photos`-only check, and `checkWhere` gives the warning (`litebox.html`). Tests: `python3 tests/run.py` gives
+`litebox-tests: pass=155 fail=0` (144 before). Also built, beyond the rules: a drive's `System Volume Information` and
+`$RECYCLE.BIN` folders are skipped like other system files, and a folder the browser won't open is passed over
+instead of stopping the load. Not tested by a person yet: the folder pickers in a real browser (as before, see
+`STATUS.md`).

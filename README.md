@@ -50,8 +50,9 @@ person who receives it just looks at the photos.
 ## Make a litebox drive
 
 1. **Get `litebox.html`.** Open [`litebox.html`](litebox.html) here and click **Download raw file**.
-2. **Lay out the drive.** Put `litebox.html` on the drive, and a folder called `photos` beside it. Each folder
-   inside `photos` becomes an album.
+2. **Lay out the drive.** Put `litebox.html` on the drive, and a folder of photos beside it. `photos` is a good
+   name, but any name works, as long as the folder sits next to `litebox.html`. Each folder inside it becomes an
+   album.
 
    ```
    your drive/
@@ -63,8 +64,10 @@ person who receives it just looks at the photos.
    ```
 
 3. **Open `litebox.html`** in your browser and click **Set up litebox**.
-4. **Click Load photos** and choose the folder that holds `litebox.html` and `photos` (the drive itself, in the
-   layout above). litebox reads every photo and makes small previews. A big collection takes a few minutes.
+4. **Click Load photos** and choose the drive (the folder that holds `litebox.html` and the photo folder), or the
+   photo folder itself. If the drive has more than one folder with photos in it, litebox asks which one to show.
+   litebox reads every photo and makes small previews. A big collection takes a few minutes. If the photo folder
+   isn't next to `litebox.html`, setup says so.
    Your browser may ask to let the page edit files (Chrome, Edge) or to "upload" them (Firefox). Nothing leaves
    your computer: the edit permission is only used to save `litebox.html` itself, never your photos.
 5. **Fill in the display settings:** the header text, the footer line, whether to show dates, and how long the
@@ -79,7 +82,7 @@ person who receives it just looks at the photos.
 
 ![The setup page: load or update the photos, then the header text, footer line, order, dates and slideshow speed](docs/images/setup.jpg)
 
-**Adding photos later:** put them in the `photos` folder, open `litebox.html`, add `#setup` to the end of the
+**Adding photos later:** put them in the photo folder, open `litebox.html`, add `#setup` to the end of the
 address in the browser's address bar, click **Update photos**, and save again.
 
 ## Looking at the photos

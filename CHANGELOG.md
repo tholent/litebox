@@ -6,6 +6,9 @@ What changed in each release of litebox. Dates are the day the release was made.
 
 - Setup has an **Order** choice: newest first, as before, or by folder and file name, which suits scans whose
   dates mean nothing. It is saved inside `litebox.html` with the other settings.
+- The photo folder can have **any name**, not only `photos`, as long as it sits next to `litebox.html`. When the
+  drive itself is chosen and more than one folder on it has photos, setup asks which one. Setup warns when it
+  can't see the loaded photos from where `litebox.html` is. Files set up before keep working.
 
 ## 0.1.0 — 2026-11-18
 

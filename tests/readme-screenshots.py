@@ -57,8 +57,8 @@ BUILD = """
   }
   const out = document.createElement('pre');
   try {
-    const picked = window.MANIFEST.files.map((f) => ({ rel: 'drive/' + f.rel, getFile: () => load(f) }));
-    const entries = lb.entriesFromPicked(picked);
+    const picked = window.MANIFEST.files.map((f) => ({ path: f.rel, getFile: () => load(f) }));
+    const entries = lb.photoEntries(picked).entries;
     const d = await lb.buildIndex(entries, () => {});
     d.settings = window.SETTINGS;
     out.id = 'lb-out';

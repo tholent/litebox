@@ -60,15 +60,32 @@
       'photos/c.png', 'photos/clip.mp4', 'photos/d.webp', 'photos/e.jpg', 'photos/h #1 & more.jpg',
     ].sort();
 
-    const picked = lb.entriesFromPicked(files.map((f) => ({ rel: 'drive/' + f.rel, getFile: () => load(f) })));
+    const driveList = files.map((f) => ({ path: 'drive/' + f.rel, getFile: () => load(f) }));
+    const pickedA = lb.photoEntries(driveList);
+    const picked = pickedA && pickedA.entries;
     const got = picked ? picked.map((e) => e.path).sort() : null;
-    ok('picking the drive folder takes only photos/, without hidden files', same(got, expectEntries), got);
+    ok('picking the drive takes its one photo folder, without hidden files or loose photos', same(got, expectEntries), got);
 
-    const pickedB = lb.entriesFromPicked(files.filter((f) => f.rel.startsWith('photos/'))
-      .map((f) => ({ rel: f.rel, getFile: () => load(f) })));
-    const gotB = pickedB ? pickedB.map((e) => e.path).sort() : null;
+    const pickedB = lb.photoEntries(files.filter((f) => f.rel.startsWith('photos/'))
+      .map((f) => ({ path: f.rel, getFile: () => load(f) })));
+    const gotB = pickedB ? pickedB.entries.map((e) => e.path).sort() : null;
     ok('picking photos/ itself gives the same list', same(gotB, expectEntries), gotB);
-    ok('a folder without photos/ is refused', lb.entriesFromPicked([{ rel: 'stuff/a.jpg', getFile: null }]) === null);
+
+    const pickedC = lb.photoEntries([{ path: 'Family 1980s/a.jpg' }, { path: 'Family 1980s/Beach/b.jpg' },
+      { path: 'Family 1980s/.DS_Store' }]);
+    ok('a photo folder of any name is taken as it is', pickedC && same(pickedC.entries.map((e) => e.path),
+      ['Family 1980s/a.jpg', 'Family 1980s/Beach/b.jpg']), pickedC);
+    ok('a folder without photos is refused', lb.photoEntries([{ path: 'stuff/notes.txt' }]) === null &&
+      lb.photoEntries([{ path: 'stuff/.hidden/a.jpg' }]) === null);
+
+    const twoFolders = [{ path: 'D/litebox.html' }, { path: 'D/photos/a.jpg' }, { path: 'D/Scans/s.jpg' },
+      { path: 'D/Docs/notes.txt' }, { path: 'D/loose.jpg' }];
+    const which = lb.photoEntries(twoFolders);
+    ok('a drive with two photo folders asks which, even when one is called photos',
+      which && same(which.choices, ['photos', 'Scans']), which);
+    const chosen = lb.photoEntries(twoFolders, 'Scans');
+    ok('the folder chosen is the one loaded', chosen && same(chosen.entries.map((e) => e.path), ['Scans/s.jpg']), chosen);
+    ok('a drive with no photo folder is refused', lb.photoEntries([{ path: 'D/litebox.html' }, { path: 'D/loose.jpg' }]) === null);
 
     let lastProgress = null;
     const d = await lb.buildIndex(picked, (done, total) => { lastProgress = [done, total]; });

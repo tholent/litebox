@@ -273,7 +273,22 @@
     await nav('setup');
     ok('setup shows when the file was saved', /^This copy of .+ was saved .+\.$/.test(text('s-saved')), text('s-saved'));
     ok('setup shows the saved header text', $('s-header').value === 'Our family photos', $('s-header').value);
+    await sleep(500);
+    ok('photos next to the page: setup gives no warning about where they are', $('s-where').hidden, text('s-where'));
     window.confirm = () => true;
+    $('s-close').click();
+
+    // --- a photo folder that is not next to the page: setup warns
+    const away = JSON.parse(JSON.stringify(stampedBack));
+    for (const p of away.photos) p.path = p.path.replace(/^photos\//, 'Family 1980s/');
+    lb.load(away);
+    await nav('setup');
+    for (let i = 0; i < 100 && $('s-where').hidden; i++) await sleep(50);
+    ok('photos not next to the page: setup says so and names the folder', visible('s-where') &&
+      /can.t see these photos from where/.test(text('s-where')) && /“Family 1980s” folder next to/.test(text('s-where')),
+      text('s-where'));
+    ok('the albums still come from the folders inside it', lb.data.photos.some((p) => p.path === 'Family 1980s/2021 lake/a.jpg') &&
+      $('s-photos').textContent.includes('in 4 albums'), text('s-photos'));
     $('s-close').click();
     window.confirm = realConfirm;
 

@@ -202,7 +202,8 @@ button, input { font: inherit; color: inherit; }
   <p class="nothing" id="nothing" hidden></p>
   <section class="empty" id="empty" hidden>
     <h1>No photos yet</h1>
-    <p>Put your photos in a folder called <b>photos</b> next to this file. Each folder inside it becomes an album:</p>
+    <p>Put your photos in a folder next to this file. <b>photos</b> is a good name, but any name works. Each folder
+      inside it becomes an album:</p>
     <pre>your drive/
 ├── litebox.html
 └── photos/
@@ -249,12 +250,14 @@ button, input { font: inherit; color: inherit; }
       To come back to it, add <b>#setup</b> to the end of the address.</p>
     <h3>Photos</h3>
     <p id="s-photos"></p>
-    <p class="small">Reads every photo in the photos folder and makes small previews. Use it again whenever photos
-      are added, removed or changed. Nothing is kept until you save below.</p>
+    <p class="small">Choose the folder of photos next to this file, or the drive that holds them both. litebox reads
+      every photo in it and makes small previews. Use it again whenever photos are added, removed or changed. Nothing
+      is kept until you save below.</p>
     <div class="row">
       <button class="btn primary" id="s-refresh" type="button">Load photos</button>
       <span class="done" id="s-loaded" hidden></span>
     </div>
+    <p class="small err" id="s-where" hidden></p>
     <div id="s-skipped"></div>
     <h3>Display</h3>
     <label>Header text
@@ -309,12 +312,12 @@ button, input { font: inherit; color: inherit; }
     catch (e) { return 'litebox.html'; }
   })();
   const SHOWN = /\.(jpe?g|jpe|jfif|png|webp|gif|avif)$/i;
-  const HIDDEN = /^(\..*|thumbs\.db|desktop\.ini)$/i;   // system files: ignored, not reported
+  const HIDDEN = /^(\..*|thumbs\.db|desktop\.ini|system volume information|\$recycle\.bin)$/i;   // system files: ignored, not reported
   const THUMB = 240;
   const THUMB_QUALITY = 0.72;
   const HEAD_BYTES = 512 * 1024;
   const WORKERS = 4;
-  const UNSORTED = '';            // album key for photos straight in photos/
+  const UNSORTED = '';            // album key for photos straight in the photo folder
   const DEFAULTS = { title: '', footer: '', showDates: true, slideSeconds: 5, order: 'newest' };
   const NAME = 'litebox';
   // Descriptions some cameras write by themselves; not worth showing.
@@ -640,24 +643,32 @@ button, input { font: inherit; color: inherit; }
     return SOURCE.slice(0, start) + json + SOURCE.slice(end);
   }
 
-  // Picked files → entries under the photos folder. `rel` starts with the picked folder's name.
-  function entriesFromPicked(list) {
-    const split = list.map((x) => ({ x, parts: x.rel.split('/') }));
-    const isPhotos = (s) => (s || '').toLowerCase() === 'photos';
-    let use;
-    if (split.some((s) => s.parts.length > 2 && isPhotos(s.parts[1]))) {         // picked the folder holding photos/
-      use = split.filter((s) => s.parts.length > 2 && isPhotos(s.parts[1])).map((s) => ({ s, parts: s.parts.slice(1) }));
-    } else if (split.length && isPhotos(split[0].parts[0])) {                   // picked photos/ itself
-      use = split.map((s) => ({ s, parts: s.parts }));
-    } else return null;
-    return use.filter((u) => !u.parts.slice(1).some((p) => HIDDEN.test(p)))
-      .map((u) => ({ path: u.parts.join('/'), getFile: u.s.x.getFile }));
+  // Every file in the picked folder → the photo folder's entries. Each `path` starts with the picked folder's name.
+  // The picked folder is the photo folder, whatever its name, unless it holds this page: then it is the drive, and
+  // the photo folder is the one folder on it with photos in it (`want` names it when there are several).
+  // Returns { entries }, { choices: [folder names] } when there are several, or null when there are no photos.
+  function photoEntries(list, want) {
+    const split = list.map((x) => ({ x, parts: x.path.split('/') }))
+      .filter((s) => !s.parts.slice(1).some((p) => HIDDEN.test(p)));
+    const isPhoto = (s) => SHOWN.test(s.parts[s.parts.length - 1]);
+    const pages = [PAGE_NAME.toLowerCase(), 'litebox.html'];
+    let use = split;
+    if (split.some((s) => s.parts.length === 2 && pages.includes(s.parts[1].toLowerCase()))) {
+      const folders = [...new Set(split.filter((s) => s.parts.length > 2 && isPhoto(s)).map((s) => s.parts[1]))]
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+      if (folders.length > 1 && !folders.includes(want)) return { choices: folders };
+      const folder = folders.length > 1 ? want : folders[0];
+      use = split.filter((s) => s.parts.length > 2 && s.parts[1] === folder).map((s) => ({ x: s.x, parts: s.parts.slice(1) }));
+    }
+    if (!use.some(isPhoto)) return null;
+    return { entries: use.map((u) => ({ path: u.parts.join('/'), getFile: u.x.getFile })) };
   }
 
   async function walkHandle(dir, prefix, out) {
     for await (const [name, handle] of dir.entries()) {
       if (HIDDEN.test(name)) continue;
-      if (handle.kind === 'directory') await walkHandle(handle, prefix + name + '/', out);
+      // A folder the browser won't open (a drive's system folder) is passed over, not the whole load.
+      if (handle.kind === 'directory') await walkHandle(handle, prefix + name + '/', out).catch(() => null);
       else out.push({ path: prefix + name, getFile: () => handle.getFile() });
     }
     return out;
@@ -1004,6 +1015,7 @@ button, input { font: inherit; color: inherit; }
     $('s-order').value = s.order === 'name' ? 'name' : 'newest';
     skippedList(data.skipped);
     showDirty();
+    checkWhere();
     $('setup').hidden = false;
     $('s-refresh').focus();
   }
@@ -1036,9 +1048,31 @@ button, input { font: inherit; color: inherit; }
     $('s-done').hidden = !show;
     $('s-done').textContent = show ? '\u2713 ' + savedNow.how + ' at ' + fmtTime(savedNow.at) : '';
     $('s-after').hidden = !(show && savedNow.how === 'Downloaded');
-    $('s-after').textContent = 'Copy the downloaded ' + PAGE_NAME + ' onto the drive next to the photos folder, ' +
+    $('s-after').textContent = 'Copy the downloaded ' + PAGE_NAME + ' onto the drive next to the ' + photoFolder() + ' folder, ' +
       'replacing the old one. If your downloads already held a ' + PAGE_NAME + ', your browser may have named this one “' +
       PAGE_NAME.replace(/\.html?$/i, '') + ' (1).html” or similar: copy the newest one, and name it ' + PAGE_NAME + '.';
+  }
+  const photoFolder = () => (data.photos.length ? '\u201c' + data.photos[0].path.split('/')[0] + '\u201d' : 'photo');
+  // The gallery finds each photo next to this page, but a picked folder could sit anywhere: setup shows a few loaded
+  // photos the way the gallery will, and warns when none can be seen from here. Showing, not reading, so it works
+  // in a viewer's browser too.
+  let whereCheck = 0;
+  async function checkWhere() {
+    const mine = ++whereCheck;
+    $('s-where').hidden = true;
+    const tries = data.photos.slice(0, 3).map((p) => new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = photoUrl(p.path);
+    }));
+    if (!tries.length) return;
+    const seen = await Promise.any(tries).then(() => true, () => false);
+    if (mine !== whereCheck || seen) return;
+    $('s-where').textContent = 'litebox can\u2019t see these photos from where this ' + PAGE_NAME + ' is. Keep the ' +
+      photoFolder() + ' folder next to ' + PAGE_NAME + ' on the drive. If you\u2019re setting up a copy that isn\u2019t on ' +
+      'the drive yet, this goes away once the file and the folder are on the drive together.';
+    $('s-where').hidden = false;
   }
   function readSetup() {
     const secs = Math.round(+$('s-seconds').value);
@@ -1165,36 +1199,40 @@ button, input { font: inherit; color: inherit; }
       ], [['Cancel', closePanel], ['Choose folder', () => { closePanel(); chooseFolder(); }, true]]);
       return;
     }
-    let entries = null, target = null;
+    let list, target = null;
     try {
-      const photosDir = await childNamed(dir, 'photos', 'directory');
-      if (photosDir) {
-        entries = await walkHandle(photosDir, photosDir.name + '/', []);
-        target = await childNamed(dir, PAGE_NAME, 'file');
-      } else if (dir.name.toLowerCase() === 'photos') {
-        entries = await walkHandle(dir, dir.name + '/', []);
-      }
-    } catch (e) { entries = null; }
-    if (!entries) return noPhotosFolder(dir.name);
+      list = await walkHandle(dir, dir.name + '/', []);
+      target = await childNamed(dir, PAGE_NAME, 'file');
+    } catch (e) { list = null; }
+    if (!list) return noPhotos(dir.name);
     if (target) fileHandle = target;
-    run(entries);
+    loadPicked(list, dir.name);
   }
 
   $('picker').addEventListener('change', () => {
     const files = Array.from($('picker').files);
     $('picker').value = '';
     if (!files.length) return;
-    const entries = entriesFromPicked(files.map((f) => ({
-      rel: f.webkitRelativePath || f.name, getFile: async () => f,
-    })));
-    if (!entries) return noPhotosFolder((files[0].webkitRelativePath || '').split('/')[0]);
-    run(entries);
+    loadPicked(files.map((f) => ({ path: f.webkitRelativePath || f.name, getFile: async () => f })),
+      (files[0].webkitRelativePath || '').split('/')[0]);
   });
 
-  function noPhotosFolder(name) {
+  // The picked folder's files → load its photos, first asking which folder when the drive has several.
+  function loadPicked(list, name, want) {
+    const got = photoEntries(list, want);
+    if (!got) return noPhotos(name);
+    if (got.entries) return run(got.entries);
+    panel('Which folder?', [
+      'More than one folder on “' + name + '” has photos in it. Choose the one litebox should show; ' +
+      'each folder inside it becomes an album.',
+    ], got.choices.map((f) => [f, () => { closePanel(); loadPicked(list, name, f); }])
+      .concat([['Cancel', closePanel, true]]));
+  }
+
+  function noPhotos(name) {
     panel('Load photos', [
-      el('p', { className: 'err' }, 'There is no photos folder in “' + (name || 'that folder') + '”.'),
-      'Choose the folder that holds ' + PAGE_NAME + ' and a folder called photos.',
+      el('p', { className: 'err' }, 'There are no photos in “' + (name || 'that folder') + '”.'),
+      'Choose the folder of photos next to ' + PAGE_NAME + ', or the drive that holds them both.',
     ], [['Cancel', closePanel], ['Choose folder', () => { closePanel(); chooseFolder(); }, true]]);
   }
 
@@ -1230,7 +1268,7 @@ button, input { font: inherit; color: inherit; }
   function showNotice(text) { $('notice').textContent = text; $('notice').hidden = false; }
 
   Object.assign(lb, {
-    readExif, cleanDescription, buildIndex, makeHtml, stamped, entriesFromPicked, render, refresh: run,
+    readExif, cleanDescription, buildIndex, makeHtml, stamped, photoEntries, checkWhere, render, refresh: run,
     open: openViewer, close: closeViewer, next: () => go(1), prev: () => go(-1), play: startShow, stop: stopShow,
     load(d) {
       data = normalise(d); album = null; openedSaved = data.saved || null; photosChanged = false; savedNow = null;
