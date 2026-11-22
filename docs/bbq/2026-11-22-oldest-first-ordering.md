@@ -48,3 +48,10 @@ back to Newest first (`litebox.html`). README and CHANGELOG updated. Tests: `.ve
 `litebox-tests: pass=164 fail=0` (155 before). `ruff check .` passes; `npx eslint .` reports errors only in
 `samples/drive/.build/`, which git ignores and CI never sees. Not tested by a person yet: the new choice in a real
 browser on the drive.
+
+## Released
+
+2026-11-22: in v0.3.0, tag `v0.3.0` on `2df2e90`, after Lint and Tests passed on that commit. Made as a draft,
+its `litebox.html` checked against the repository's copy (sha256 `83114ddf…a1c4f7` both), then published on
+Chris's word ("ok, let's push the commits, tag the release v0.3.0 and publish the release"). GitHub reports it
+immutable.

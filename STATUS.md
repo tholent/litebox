@@ -17,6 +17,7 @@ The project's live state. Update it when work lands. Every claim cites at least 
 - The photo folder can have any name, as long as it sits next to `litebox.html`; setup asks which folder when the drive has several, and warns when it can't see the photos from where the page is. (`litebox.html`, `docs/bbq/2026-11-22-photo-folder-name.md`).
 - Setup has an Order choice: newest first, oldest first, or by folder and file name (for scans) (`litebox.html`, `CHANGELOG.md`, `docs/bbq/2026-11-22-oldest-first-ordering.md`).
 - ADR-002 ratified: every release is made as a checked draft, then published (`docs/decisions/ADR-002-make-each-release-as-a-checked-draft-before-publishing.md`, `docs/releasing.md`).
+- **v0.3.0 released** on 2026-11-22: tag `v0.3.0` on `2df2e90`, with `litebox.html` attached (its checksum matched the repository's before publishing); immutable (checked through GitHub's API), attestation not checked because this machine's `gh` lacks `release verify` (`CHANGELOG.md`, `docs/releasing.md`).
 - **v0.2.0 released** on 2026-11-22: tag `v0.2.0` on `d1d6789`, with `litebox.html` attached; immutable (checked through GitHub's API), attestation not checked because this machine's `gh` lacks `release verify` (`CHANGELOG.md`, `docs/releasing.md`).
 - **v0.1.0 released** on 2026-11-18: tag `v0.1.0` on `5a3e74a`, with `litebox.html` attached (`CHANGELOG.md`).
 - Pushed to github.com/tholent/litebox on 2026-11-18; Lint (ruff, ESLint, license headers) and Tests pass there, with the pip and npm caches in use (`.github/workflows/lint.yml`, `.github/workflows/test.yml`).
@@ -24,7 +25,7 @@ The project's live state. Update it when work lands. Every claim cites at least 
 
 ## Next
 
-- Try v0.2.0 on a real USB stick, including a photo folder with another name and a drive with two photo folders, on Windows and macOS (Chrome and Safari), the one check the blind review asked for that no test covers (`docs/bbq/2026-11-18-release-prep.md`).
+- Try v0.3.0 on a real USB stick, including a photo folder with another name and a drive with two photo folders, on Windows and macOS (Chrome and Safari), the one check the blind review asked for that no test covers (`docs/bbq/2026-11-18-release-prep.md`).
 
 ## Known debt
 
@@ -36,7 +37,7 @@ The project's live state. Update it when work lands. Every claim cites at least 
 ## Log
 
 - 2026-11-18: prepared with project-prep; ADR-001 drafted with makeadr and ratified by Chris; first working gallery planned with bbq and built; second round (albums, search, hidden setup, details panel) built; logo and header text added; header-text save bug fixed; setup reworked so only its save button saves. Release prep (license, headers, README, CI), pushed to GitHub, v0.1.0 released.
-- 2026-11-22: a download button (multi-select, one zip) planned with bbq and cancelled by Chris: a page opened from the drive can show the photos but not read them (`docs/bbq/2026-11-22-download-button.md`). Photo folder of any name planned with bbq and built (`docs/bbq/2026-11-22-photo-folder-name.md`). v0.2.0 released. Oldest first ordering planned with bbq and built (`docs/bbq/2026-11-22-oldest-first-ordering.md`).
+- 2026-11-22: a download button (multi-select, one zip) planned with bbq and cancelled by Chris: a page opened from the drive can show the photos but not read them (`docs/bbq/2026-11-22-download-button.md`). Photo folder of any name planned with bbq and built (`docs/bbq/2026-11-22-photo-folder-name.md`). v0.2.0 released. Oldest first ordering planned with bbq and built (`docs/bbq/2026-11-22-oldest-first-ordering.md`). v0.3.0 released.
 
 ## How this file is kept
 
