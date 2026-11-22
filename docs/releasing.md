@@ -113,6 +113,10 @@ gh release view vX.Y.Z -R tholent/litebox --json isImmutable,isDraft,tagName   #
 gh release verify vX.Y.Z -R tholent/litebox                                      # GitHub's attestation
 ```
 
+An older `gh` has neither the `isImmutable` field nor `release verify`. Then check immutability through the API
+(`gh api repos/tholent/litebox/releases/tags/vX.Y.Z -q .immutable` must print `true`), and say that the attestation
+was not checked.
+
 Anyone can check a downloaded copy the same way: `gh release verify-asset vX.Y.Z litebox.html -R tholent/litebox`.
 
 ## 10. Record it
